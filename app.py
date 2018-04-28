@@ -95,6 +95,9 @@ if __name__ == '__main__':
     else:
         port = os.getuid()
     DSN = dbconn2.read_cnf()
-    DSN['db'] = 'mshum2_db'
+    DSN['db'] = 'mhattori_db'
     app.debug = True
     app.run('0.0.0.0',port)
+
+
+

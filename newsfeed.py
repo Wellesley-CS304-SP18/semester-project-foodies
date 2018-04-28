@@ -1,4 +1,4 @@
-# Created by Megan Shum
+# Created by Mina Hattori
 # CS304-Final Project
 # 2018.05.27
 #!/usr/local/bin/python2.7
@@ -13,7 +13,7 @@ import dbconn2
 def retrievePics(conn, username):
     '''Returns all of the user's pic post from the database in the form of a dictionary'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor) # results as Dictionaries
-    curs.execute('select pic from posts where username = %s', [username])
+    curs.execute('seelct posts.pic from posts inner join followers on posts.username = followers.following where followers = %s', [username])
     return curs.fetchall()
 
 def getFollow(conn, username):
@@ -39,6 +39,6 @@ if __name__ == '__main__':
         print "Usage: {name} nm".format(name=sys.argv[0])
     else:
         DSN = dbconn2.read_cnf()
-        DSN['db'] = 'mhattori_db'     # the database we want to connect to
+        DSN['db'] = 'mshum2_db'     # the database we want to connect to
         dbconn2.connect(DSN)
         print lookupByNM(sys.argv[1])
