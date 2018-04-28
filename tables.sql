@@ -20,7 +20,7 @@ ENGINE = InnoDB;
 
 create table profile(
 	username varchar(50) not null primary key,
-	INDEX(username)
+	INDEX(username),
 	foreign key (username) references user(username),
 	description varchar(150)
 )
@@ -38,11 +38,11 @@ create table followers(
 ENGINE = InnoDB;
 
 create table posts(
-	post_id integer unsigned auto_increment primary key,
+	post_id integer unsigned not null auto_increment primary key,
 	username varchar(50) not null,
 	description varchar(100),
 	location varchar(50),
-	pic longblob,
+	pic varchar(150) not null,
 	time_stamp datetime not null,
 	INDEX(username),
 	foreign key (username) references user(username) on delete cascade

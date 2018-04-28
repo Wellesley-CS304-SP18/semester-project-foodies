@@ -10,9 +10,9 @@ import dbconn2
 # ================================================================
 # The functions that do most of the work.
 
-def uploadPost(conn, username, description, location, time_stamp, pic):
+def uploadPost(conn, username, description, location, time_stamp, pathname):
     curs = conn.cursor(MySQLdb.cursors.DictCursor) # results as Dictionaries
-    curs.execute('insert into posts(username, description, location, pic, time_stamp) values(%s, %s, %s, %s, %s)', [username, description, location, time_stamp, pic])
+    curs.execute('insert into posts(username, description, location, time_stamp, pic) values(%s, %s, %s, %s, %s)', [username, description, location, time_stamp, pathname])
 
 # ================================================================
 # This starts the ball rolling, *if* the script is run as a script,

@@ -15,60 +15,86 @@ import imghdr
 import time
 import uploadops
 
+app.secret_key = 'your secret here'
+# replace that with a random key
+app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
+                                          'abcdefghijklmnopqrstuvxyz' +
+                                          '0123456789'))
+                           for i in range(20) ])
+
+# This gets us better error messages for certain common request errors
+app.config['TRAP_BAD_REQUEST_ERRORS'] = True
+
 @app.route('/upload/', methods = ['GET', 'POST'])
 def upload():
-    if not request.cookies.get('username'): #I am assuming Maxine will create the cookie once the user logs in
-        flash("Please login")
-        return redirect(url_for('login')) # i am assuming that Maxine will make this route
+    # if not request.cookies.get('username'): #I am assuming Maxine will create the cookie once the user logs in
+    #     flash("Please login")
+    #     return redirect(url_for('login')) # i am assuming that Maxine will make this route
+    # else:
+    if request.method == 'GET':
+        return render_template('upload.html')
     else:
-        if request.method == 'GET':
-            return render_template('form.html',src='',nm='')
-        else:
-            try:
-                username = request.cookies.get('username')
-                description = request.form['description'] # may throw error
-                location = request.form['location']
-                time_stamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
-                f = request.files['pic']
-                mime_type = imghdr.what(f.stream)
-                if mime_type != 'jpeg':
-                    raise Exception('Not a JPEG')
-                pic = secure_filename(str(nm)+'.jpeg')
-                pathname = 'images/'+filename
-                f.save(pathname) # saves the contents in a filename
-                flash('Upload successful')
-                conn = dbconn2.connect(DSN)
-                uploadops.uploadPost(conn, username, description, location, time_stamp, pic)
-                return render_template('upload.html',
-                                       src=url_for('pic',fname=pic)
-                                       )
-            except Exception as err:
-                flash('Upload failed {why}'.format(why=err))
-                return render_template('upload.html',
-                                        src='')
+        try:
+            #username = request.cookies.get('username')
+            username = 'megan'
+            description = request.form['description'] # may throw error
+            location = request.form['location']
+            time_stamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
+            f = request.files['pic']
+            mime_type = imghdr.what(f.stream)
+            if mime_type != 'jpeg':
+                raise Exception('Not a JPEG')
+            pic = secure_filename(str(f.filename))
+            #dir_path = os.path.dirname(os.path.realpath(__file__))
+            pathname = 'images/'+ pic
+            f.save(pathname) # saves the contents in a temporarily in the images folder
+            flash('Upload successful')
+            conn = dbconn2.connect(DSN)
+            uploadops.uploadPost(conn, username, description, location,         time_stamp, pic)
+            #os.remove(pathname) # deletes image
+            return render_template('upload.html',
+                                   src=url_for('pic',fname=pic)
+                                   )
+        except Exception as err:
+            flash('Upload failed {why}'.format(why=err))
+            return render_template('upload.html')
 
 @app.route('/profile/', methods = ['GET'])
 def profile():
-    if not request.cookies.get('username'):
-        flash("Please login")
-        return redirect(url_for('login'))
-    else:
-        if request.method == 'GET':
-            conn = dbconn2.connect(DSN)
-            username = request.cookies.get('username')
-            followers = profops.getFollow(conn, username)
-            following = profops.getFollowing(conn, username)
-            pics = profops.retrievePics(conn, username)
-            return render_template('profile.html',
-                                    username = username,
-                                    followers = followers,
-                                    following = following,
-                                    pics = pics
-                                    )
+    # if not request.cookies.get('username'):
+    #     flash("Please login")
+    #     return redirect(url_for('login'))
+    # else:
+    if request.method == 'GET':
+        conn = dbconn2.connect(DSN)
+        #username = request.cookies.get('username')
+        username = 'megan'
+        followers = profops.getFollow(conn, username)
+        following = profops.getFollowing(conn, username)
+        pics = profops.retrievePics(conn, username)
+        return render_template('profile.html',
+                                username = username,
+                                followers = followers,
+                                following = following,
+                                pics = pics
+                                )
 
-@app.route('/profile/<fname>')
+@app.route('/images/<fname>')
 def pic(fname):
     f = secure_filename(fname)
     mime_type = f.split('.')[-1]
-    val = send_from_directory(mime_type,f)
+    val = send_from_directory('images',f)
     return val
+
+if __name__ == '__main__':
+
+    if len(sys.argv) > 1:
+        # arg, if any, is the desired port number
+        port = int(sys.argv[1])
+        assert(port>1024)
+    else:
+        port = os.getuid()
+    DSN = dbconn2.read_cnf()
+    DSN['db'] = 'mshum2_db'
+    app.debug = True
+    app.run('0.0.0.0',port)

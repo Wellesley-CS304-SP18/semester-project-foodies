@@ -13,6 +13,6 @@ CS304-Final Proejct
     <h3>{{following}} following</h3>
     {% for pic in pics %}
       <li><p><img src="{{url_for('pic',fname=pic['pic'])}}" alt="{{pic['pic']}}"></p></li>
-    {% end for %}
+    {% endfor %}
   </body>
 </html>

@@ -19,14 +19,10 @@
 <p>Create your post below!
 <form method="post" action="" enctype="multipart/form-data">
     <p><label for="description">Description: <input type="text" name="description"></label></p>
-    <p><label for="location">DLocation: <input type="text" name="location"></label></p>
+    <p><label for="location">Location: <input type="text" name="location"></label></p>
     <p><label for="pic">Pic: <input type="file" name="pic"></label></p>
     <p><input type="submit" value="upload"></p>
 </form>
-
-{% src != '' %}
-<p> <img src="{{src}}"></p>
-{% endif %}
 
 </body>
 </html>
