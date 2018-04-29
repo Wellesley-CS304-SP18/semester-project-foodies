@@ -1,0 +1,38 @@
+<!-- This file displays the log in page and takes log in data. -->
+
+<!doctype html>
+<html>
+  <head>
+    <title>Foodies</title>
+  </head>
+<body>
+    <div id="navigation">
+      <ul>
+			<li><a href={{ url_for('register')}}>Register</a></li>
+      </ul>
+    </div>
+    <div id="content">
+
+        <div id="flashes">
+			<!-- Displays messages flashed by app.py -->
+			{% with messages = get_flashed_messages() %}
+			{% if messages %}
+				<div id="messages">
+				{% for msg in messages %}
+					<p>{{msg}}</p>
+				{% endfor %}
+				</div>
+			{% endif %}
+			{% endwith %}	
+		</div>
+ 
+  <h1>Login to Foodies</h1>
+
+  <form method="post" action="">
+      <p><label for="username">User name: <input type="text" name="username"></label></p>
+      <p><label for="passwd">Password: <input type="password" name="passwd"></label></p>
+      <p><button type="submit">submit</button></p>
+  </form>
+    </div>	
+  </body>
+</html>

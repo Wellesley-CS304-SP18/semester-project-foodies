@@ -14,6 +14,7 @@ import profops
 import imghdr
 import time
 import uploadops
+import accounts.py
 
 app.secret_key = 'your secret here'
 # replace that with a random key
@@ -25,6 +26,77 @@ app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
 # This gets us better error messages for certain common request errors
 app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 
+# login page
+@app.route('/login/')
+def login():
+	return render_template('login.html',
+							title='Login',
+							script=url_for('loginProcess'))
+	
+# Process login form
+@app.route('/login/', methods=['GET', 'POST'])
+def loginProcess():
+	# When get, return empty login page
+	if request.method == 'GET':
+		flash("login failed. Please try again")
+		return login()
+	else:
+		username = request.form['username']
+		passwd = request.form['passwd']
+	
+	conn = dbconn2.connect(DSN)
+	password = passwd # Replace this to find the hashed password
+	
+	# If valid username and password
+	if (accounts.isValidUserid(conn, id) and accounts.passwordMatches(conn, username, password):
+		flash("Login succeeded")
+		# Save username to a cookie
+		resp = make_response(render_template('login.html'))
+		resp.set_cookie('username', username)
+		return resp
+	
+	else:
+		flash("login failed; please try again")
+		return login()
+		
+@app.route('/register/')
+def register():
+	return render_template('register.html',
+							title='Register',
+							script=url_for('registerProcess'))
+							
+# Process login form
+@app.route('/register/', methods=['POST'])
+def registerProcess():
+	# When get, return empty login page
+	if request.method == 'GET':
+		flash("Registration failed. Please try again")
+		return register()
+	else:
+		name = request.form['name']
+		email = request.form['email']
+		username = request.form['username']
+		passwd = request.form['passwd']
+		comPasswd = request.form['comPasswd']
+			
+	conn = dbconn2.connect(DSN)
+	
+	if (accounts.availableUsername(conn, username)):
+		flash("Username is taken")
+		register()
+	else: 
+	
+		if (accounts.passwordMatches(conn, passwd, comPasswd)):
+			flash("Passwords do not match")
+			register()
+			
+		else:
+			password = passwd # Replace this to find the hashed password	
+			# If valid username and password
+			accounts.addNewUser(conn, name, email, username, password)
+			flash("Registration successful")
+			return redirect(url_for('login'))
+			
 @app.route('/upload/', methods = ['GET', 'POST'])
 def upload():
     # if not request.cookies.get('username'): #I am assuming Maxine will create the cookie once the user logs in
