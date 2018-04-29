@@ -1,0 +1,12 @@
+<!doctype html>
+<html>
+  <head>
+  </head>
+  <body>
+  <h1> News Feed for {{username}}</h1>>
+    {% for post in posts %}
+      <h3>{{post['username']}}</h3>
+      <p> {{post['pic']}}</p>
+    {% endfor %}
+  </body>
+</html>

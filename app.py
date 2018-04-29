@@ -14,7 +14,8 @@ import profops
 import imghdr
 import time
 import uploadops
-import accounts.py
+import accounts
+import newsfeedOps
 
 app.secret_key = 'your secret here'
 # replace that with a random key
@@ -37,27 +38,25 @@ def login():
 @app.route('/login/', methods=['GET', 'POST'])
 def loginProcess():
 	# When get, return empty login page
-	if request.method == 'GET':
-		flash("login failed. Please try again")
-		return login()
-	else:
-		username = request.form['username']
-		passwd = request.form['passwd']
-	
-	conn = dbconn2.connect(DSN)
-	password = passwd # Replace this to find the hashed password
+    if request.method == 'GET':
+        flash("login failed. Please try again")
+        return login()
+    else:
+        username = request.form['username']
+        passwd = request.form['passwd']
+    conn = dbconn2.connect(DSN)
+    password = passwd # Replace this to find the hashed password
 	
 	# If valid username and password
-	if (accounts.isValidUserid(conn, id) and accounts.passwordMatches(conn, username, password):
-		flash("Login succeeded")
+    if (accounts.isValidUserid(conn, id) and accounts.passwordMatches(conn, username, password)):
+        flash("Login succeeded")
 		# Save username to a cookie
-		resp = make_response(render_template('login.html'))
-		resp.set_cookie('username', username)
-		return resp
-	
-	else:
-		flash("login failed; please try again")
-		return login()
+        resp = make_response(render_template('login.html'))
+        resp.set_cookie('username', username)
+        return resp
+    else:
+        flash("login failed; please try again")
+        return login()
 		
 @app.route('/register/')
 def register():
@@ -150,13 +149,40 @@ def profile():
                                 following = following,
                                 pics = pics
                                 )
+@app.route('/newsfeed/', methods = ['GET','POST'])
+def newsfeed():
+    if request.method == 'GET':
+        username = 'minaH'
+        conn = dbconn2.connect(DSN)
+        information = newsfeedOps.retrievePics(conn, username)
+        print str(information [0]['username'])
+            #post = information['pic']
+            #postuser = information['username']
+            #postid = information['post_id']
+        return render_template ('newsfeed.html',username = username, posts = information)
+    # if 'username' in request.cookies:
+    #     username = request.cookies.get('username')
+    #     information = newsfeed.retrievePiecs(conn, username)
+    #     #post = information['pic']
+    #     #postuser = information['username']
+    #     #postid = information['post_id']
 
-@app.route('/images/<fname>')
-def pic(fname):
-    f = secure_filename(fname)
-    mime_type = f.split('.')[-1]
-    val = send_from_directory('images',f)
-    return val
+    #     return render_template ('newsfeed.html',username = username, post = information)
+    # else:
+    #     return redirect (url_for ('login'))
+
+        
+
+
+
+
+
+# @app.route('/images/<fname>')
+# def pic(fname):
+#     f = secure_filename(fname)
+#     mime_type = f.split('.')[-1]
+#     val = send_from_directory('images',f)
+#     return val
 
 if __name__ == '__main__':
 
