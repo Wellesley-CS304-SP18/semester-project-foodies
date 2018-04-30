@@ -88,7 +88,8 @@ def registerProcess():
 		username = request.form['username']
 		passwd = request.form['passwd']
 		comPasswd = request.form['comPasswd'] 
-        if((name == None) or (email == None) or (username == None) or (passwd == None) or (comPasswd == None)):
+        print(name)
+        if((name == "") or (email == "") or (username == "") or (passwd == "") or (comPasswd == "")):
             flash("Please fill out all fields")
             return register()
 			
