@@ -3,29 +3,39 @@
 import sys
 import MySQLdb
 import dbconn2
+import bcrypt
+		
+def validPassword(conn, username, password):
+	curs = conn.cursor(MySQLdb.cursors.DictCursor)
+	curs.execute('select password from user where username=%s', [username])
+	result = curs.fetchone()
+	if (bcrypt.hashpw(password.encode('utf-8'), result['password'].encode('utf-8')) == result['password'].encode('utf-8')):
+		return True
+	else:
+		return False
 
-# Return a boolean whether the id is a valid id or not
-# def isValidUserid(conn, id):
-# 	curs = conn.cursor(MySQLdb.cursors.DictCursor)
-# 	# curs.execute('select name from person where nm=%s', [id])
-# 	# all = curs.fetchone()
-# 	# if all is None:
-# 	#	return False
-# 	#else:
-# 	#	return True
-# # def passwordMatches(conn, id, password):
+def getHashedPassword(conn, username):
+	curs = conn.cursor(MySQLdb.cursors.DictCursor)
+	curs.execute('select password from user where username=%s', [username])
+	result = curs.fetchone()
+	return result['password']
 
-# # def registeruser(conn, id, password, name, email):
+def registerUser(conn, username, password, name, email):
+	curs = conn.cursor(MySQLdb.cursors.DictCursor)
+	curs.execute('insert into user (username, password, name, email) values (%s, %s, %s, %s)', [username, password, name, email])
 
-# # def availableUsername(conn, username):
-
-# # def passwordMatches(conn, passwd, comPasswd):
-
-# # def addNewUser(conn, name, email, username, password):
+def validUsername(conn, username):
+	curs = conn.cursor(MySQLdb.cursors.DictCursor)
+	curs.execute('select username from user where username=%s', [username])
+	all = curs.fetchone()
+	if all is None:
+		return False
+	else:
+		return True
 
 # =================================================================
 
 if __name__ == '__main__':
 		DSN = dbconn2.read_cnf()
-		DSN['db'] = 'mhood_db'     # the database we want to connect to
+		DSN['db'] = 'mmm_db'     # the database we want to connect to
 		dbconn2.connect(DSN)

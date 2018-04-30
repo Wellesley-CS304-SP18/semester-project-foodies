@@ -23,6 +23,6 @@ if __name__ == '__main__':
         print "Usage: {name} nm".format(name=sys.argv[0])
     else:
         DSN = dbconn2.read_cnf()
-        DSN['db'] = 'mshum2_db'     # the database we want to connect to
+        DSN['db'] = 'mmm_db'     # the database we want to connect to
         dbconn2.connect(DSN)
         print lookupByNM(sys.argv[1])

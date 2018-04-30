@@ -8,6 +8,7 @@ from flask import (Flask, render_template, make_response, url_for, request,
 from werkzeug import secure_filename
 app = Flask(__name__)
 
+import bcrypt
 import sys,os,random
 import dbconn2
 import profops
@@ -16,6 +17,7 @@ import time
 import uploadops
 import accounts
 import newsfeedOps
+
 
 app.secret_key = 'your secret here'
 # replace that with a random key
@@ -26,6 +28,14 @@ app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
 
 # This gets us better error messages for certain common request errors
 app.config['TRAP_BAD_REQUEST_ERRORS'] = True
+
+@app.route('/')
+def home():
+	if (request.cookies.get('username') == None):
+		return redirect(url_for('login'))
+	else:
+		return redirect(url_for('newsfeed'))
+			
 
 # login page
 @app.route('/login/')
@@ -44,19 +54,20 @@ def loginProcess():
     else:
         username = request.form['username']
         passwd = request.form['passwd']
-    conn = dbconn2.connect(DSN)
-    password = passwd # Replace this to find the hashed password
-	
+    conn = dbconn2.connect(DSN)	
+
 	# If valid username and password
-    if (accounts.isValidUserid(conn, id) and accounts.passwordMatches(conn, username, password)):
-        flash("Login succeeded")
-		# Save username to a cookie
-        resp = make_response(render_template('login.html'))
-        resp.set_cookie('username', username)
-        return resp
+    if (accounts.validUsername(conn, username)):
+        storedHash = accounts.getHashedPassword(conn, username)
+        if(bcrypt.hashpw(passwd.encode('utf-8'), storedHash.encode('utf-8')) == storedHash.encode('utf-8')):
+            flash("Login succeeded")
+    		# Save username to a cookie
+            resp = make_response(redirect(url_for('newsfeed')))
+            resp.set_cookie('username', username)
+            return resp
     else:
-        flash("login failed; please try again")
-        return login()
+        flash("Login failed. Please try again")
+    	return login()
 		
 @app.route('/register/')
 def register():
@@ -76,106 +87,103 @@ def registerProcess():
 		email = request.form['email']
 		username = request.form['username']
 		passwd = request.form['passwd']
-		comPasswd = request.form['comPasswd']
+		comPasswd = request.form['comPasswd'] 
+        if((name == None) or (email == None) or (username == None) or (passwd == None) or (comPasswd == None)):
+            flash("Please fill out all fields")
+            return register()
 			
 	conn = dbconn2.connect(DSN)
 	
-	if (accounts.availableUsername(conn, username)):
+	if (accounts.validUsername(conn, username)):
 		flash("Username is taken")
-		register()
-	else: 
-	
-		if (accounts.passwordMatches(conn, passwd, comPasswd)):
-			flash("Passwords do not match")
-			register()
+		return register() 
+		
+	if (passwd != comPasswd):
+		flash("Passwords do not match")
+		return register()
 			
-		else:
-			password = passwd # Replace this to find the hashed password	
-			# If valid username and password
-			accounts.addNewUser(conn, name, email, username, password)
-			flash("Registration successful")
-			return redirect(url_for('login'))
+	# Register new account
+	hashed = bcrypt.hashpw(passwd.encode('utf-8'), bcrypt.gensalt())	
+	# If valid username and password
+	accounts.registerUser(conn, username, hashed, name, email)
+	flash("Registration successful")
+	return redirect(url_for('login'))
 			
 @app.route('/upload/', methods = ['GET', 'POST'])
 def upload():
-    # if not request.cookies.get('username'): #I am assuming Maxine will create the cookie once the user logs in
-    #     flash("Please login")
-    #     return redirect(url_for('login')) # i am assuming that Maxine will make this route
-    # else:
-    if request.method == 'GET':
-        return render_template('upload.html')
+    if not request.cookies.get('username'): #I am assuming Maxine will create the cookie once the user logs in
+         flash("Please login")
+         return redirect(url_for('login')) # i am assuming that Maxine will make this route
     else:
-        try:
-            #username = request.cookies.get('username')
-            username = 'megan'
-            description = request.form['description'] # may throw error
-            location = request.form['location']
-            time_stamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
-            f = request.files['pic']
-            mime_type = imghdr.what(f.stream)
-            if mime_type != 'jpeg':
-                raise Exception('Not a JPEG')
-            pic = secure_filename(str(f.filename))
-            #dir_path = os.path.dirname(os.path.realpath(__file__))
-            pathname = 'images/'+ pic
-            f.save(pathname) # saves the contents in a temporarily in the images folder
-            flash('Upload successful')
-            conn = dbconn2.connect(DSN)
-            uploadops.uploadPost(conn, username, description, location,         time_stamp, pic)
-            #os.remove(pathname) # deletes image
-            return render_template('upload.html',
-                                   src=url_for('pic',fname=pic)
-                                   )
-        except Exception as err:
-            flash('Upload failed {why}'.format(why=err))
+        if request.method == 'GET':
             return render_template('upload.html')
+        else:
+            try:
+                #username = request.cookies.get('username')
+                username = 'megan'
+                description = request.form['description'] # may throw error
+                location = request.form['location']
+                time_stamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
+                f = request.files['pic']
+                mime_type = imghdr.what(f.stream)
+                if mime_type != 'jpeg':
+                    raise Exception('Not a JPEG')
+                pic = secure_filename(str(f.filename))
+                #dir_path = os.path.dirname(os.path.realpath(__file__))
+                pathname = 'images/'+ pic
+                f.save(pathname) # saves the contents in a temporarily in the images folder
+                flash('Upload successful')
+                conn = dbconn2.connect(DSN)
+                uploadops.uploadPost(conn, username, description, location,         time_stamp, pic)
+                #os.remove(pathname) # deletes image
+                return render_template('upload.html',
+                                       src=url_for('pic',fname=pic)
+                                       )
+            except Exception as err:
+                flash('Upload failed {why}'.format(why=err))
+                return render_template('upload.html')
 
 @app.route('/profile/', methods = ['GET'])
 def profile():
-    # if not request.cookies.get('username'):
-    #     flash("Please login")
-    #     return redirect(url_for('login'))
-    # else:
-    if request.method == 'GET':
-        conn = dbconn2.connect(DSN)
-        #username = request.cookies.get('username')
-        username = 'megan'
-        followers = profops.getFollow(conn, username)
-        following = profops.getFollowing(conn, username)
-        pics = profops.retrievePics(conn, username)
-        return render_template('profile.html',
-                                username = username,
-                                followers = followers,
-                                following = following,
-                                pics = pics
-                                )
+    if not request.cookies.get('username'):
+         flash("Please login")
+         return redirect(url_for('login'))
+    else:
+        if request.method == 'GET':
+            conn = dbconn2.connect(DSN)
+            #username = request.cookies.get('username')
+            username = 'megan'
+            followers = profops.getFollow(conn, username)
+            following = profops.getFollowing(conn, username)
+            pics = profops.retrievePics(conn, username)
+            return render_template('profile.html',
+                                    username = username,
+                                    followers = followers,
+                                    following = following,
+                                    pics = pics
+                                    )
 @app.route('/newsfeed/', methods = ['GET','POST'])
 def newsfeed():
-    if request.method == 'GET':
-        username = 'minaH'
+    # if request.method == 'GET':
+    #     username = 'minaH'
+    #     conn = dbconn2.connect(DSN)
+    #     information = newsfeedOps.retrievePics(conn, username)
+    #     print str(information [0]['username'])
+    #     post = information['pic']
+    #     postuser = information['username']
+    #     postid = information['post_id']
+    #     return render_template ('newsfeed.html',username = username, posts = information)
+    if 'username' in request.cookies:
+        username = request.cookies.get('username')
         conn = dbconn2.connect(DSN)
         information = newsfeedOps.retrievePics(conn, username)
-        print str(information [0]['username'])
-            #post = information['pic']
-            #postuser = information['username']
-            #postid = information['post_id']
-        return render_template ('newsfeed.html',username = username, posts = information)
-    # if 'username' in request.cookies:
-    #     username = request.cookies.get('username')
-    #     information = newsfeed.retrievePiecs(conn, username)
-    #     #post = information['pic']
-    #     #postuser = information['username']
-    #     #postid = information['post_id']
-
-    #     return render_template ('newsfeed.html',username = username, post = information)
-    # else:
-    #     return redirect (url_for ('login'))
-
-        
-
-
-
-
+        if (information != None):
+            return render_template ('newsfeed.html',username = username, post = information)
+        else:
+            flash("Follow people to see pictures on your Newsfeed!")
+            return render_template('newsfeed.html', username = username, post = None)
+    else:
+         return redirect (url_for ('login'))
 
 # @app.route('/images/<fname>')
 # def pic(fname):
@@ -193,7 +201,7 @@ if __name__ == '__main__':
     else:
         port = os.getuid()
     DSN = dbconn2.read_cnf()
-    DSN['db'] = 'mhattori_db'
+    DSN['db'] = 'mmm_db'
     app.debug = True
     app.run('0.0.0.0',port)
 
