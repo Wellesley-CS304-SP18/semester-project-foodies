@@ -1,0 +1,35 @@
+<!--
+Created by Megan Shum
+CS304-Final project
+2018.04.30
+-->
+<!doctype html>
+<html>
+<head>
+  <!-- UIkit CSS -->
+  <link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/css/uikit.min.css"/>
+
+  <!-- UIkit JS -->
+ <script src=
+"https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/js/uikit.min.js">
+ </script>
+ <script src=
+ "https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/js/uikit-icons.min.js">
+ </script>
+</head>
+<body>
+  <nav class="uk-navbar-container" uk-navbar>
+      <div class="uk-navbar-left">
+          <ul class="uk-navbar-nav">
+              <li><a href="{{ url_for('newsfeed') }}">Newsfeed</a></li>
+              <li><a href="{{ url_for('profile') }}">Profile</a></li>
+              <li><a href="{{ url_for('upload') }}">Post/Upload</a></li>
+          </ul>
+
+      </div>
+  </nav>
+  {% block content %}
+  {% endblock%}
+</body>
+</html>

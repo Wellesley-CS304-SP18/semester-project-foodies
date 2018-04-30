@@ -35,7 +35,7 @@ def home():
 		return redirect(url_for('login'))
 	else:
 		return redirect(url_for('newsfeed'))
-			
+
 
 # login page
 @app.route('/login/')
@@ -43,7 +43,7 @@ def login():
 	return render_template('login.html',
 							title='Login',
 							script=url_for('loginProcess'))
-	
+
 # Process login form
 @app.route('/login/', methods=['GET', 'POST'])
 def loginProcess():
@@ -54,7 +54,7 @@ def loginProcess():
     else:
         username = request.form['username']
         passwd = request.form['passwd']
-    conn = dbconn2.connect(DSN)	
+    conn = dbconn2.connect(DSN)
 
 	# If valid username and password
     if (accounts.validUsername(conn, username)):
@@ -68,13 +68,13 @@ def loginProcess():
     else:
         flash("Login failed. Please try again")
     	return login()
-		
+
 @app.route('/register/')
 def register():
 	return render_template('register.html',
 							title='Register',
 							script=url_for('registerProcess'))
-							
+
 # Process login form
 @app.route('/register/', methods=['POST'])
 def registerProcess():
@@ -87,29 +87,29 @@ def registerProcess():
 		email = request.form['email']
 		username = request.form['username']
 		passwd = request.form['passwd']
-		comPasswd = request.form['comPasswd'] 
+		comPasswd = request.form['comPasswd']
         print(name)
         if((name == "") or (email == "") or (username == "") or (passwd == "") or (comPasswd == "")):
             flash("Please fill out all fields")
             return register()
-			
+
 	conn = dbconn2.connect(DSN)
-	
+
 	if (accounts.validUsername(conn, username)):
 		flash("Username is taken")
-		return register() 
-		
+		return register()
+
 	if (passwd != comPasswd):
 		flash("Passwords do not match")
 		return register()
-			
+
 	# Register new account
-	hashed = bcrypt.hashpw(passwd.encode('utf-8'), bcrypt.gensalt())	
+	hashed = bcrypt.hashpw(passwd.encode('utf-8'), bcrypt.gensalt())
 	# If valid username and password
 	accounts.registerUser(conn, username, hashed, name, email)
 	flash("Registration successful")
 	return redirect(url_for('login'))
-			
+
 @app.route('/upload/', methods = ['GET', 'POST'])
 def upload():
     if not request.cookies.get('username'): #I am assuming Maxine will create the cookie once the user logs in
@@ -120,8 +120,7 @@ def upload():
             return render_template('upload.html')
         else:
             try:
-                #username = request.cookies.get('username')
-                username = 'megan'
+                username = request.cookies.get('username')
                 description = request.form['description'] # may throw error
                 location = request.form['location']
                 time_stamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
@@ -152,8 +151,7 @@ def profile():
     else:
         if request.method == 'GET':
             conn = dbconn2.connect(DSN)
-            #username = request.cookies.get('username')
-            username = 'megan'
+            username = request.cookies.get('username')
             followers = profops.getFollow(conn, username)
             following = profops.getFollowing(conn, username)
             pics = profops.retrievePics(conn, username)
@@ -186,12 +184,12 @@ def newsfeed():
     else:
          return redirect (url_for ('login'))
 
-# @app.route('/images/<fname>')
-# def pic(fname):
-#     f = secure_filename(fname)
-#     mime_type = f.split('.')[-1]
-#     val = send_from_directory('images',f)
-#     return val
+@app.route('/images/<fname>')
+def pic(fname):
+    f = secure_filename(fname)
+    mime_type = f.split('.')[-1]
+    val = send_from_directory('images',f)
+    return val
 
 if __name__ == '__main__':
 
@@ -205,6 +203,3 @@ if __name__ == '__main__':
     DSN['db'] = 'mmm_db'
     app.debug = True
     app.run('0.0.0.0',port)
-
-
-

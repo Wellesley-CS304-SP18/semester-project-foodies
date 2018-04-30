@@ -1,9 +1,5 @@
-<!doctype html>
-<html lang='en'>
-<head>
-    <title>Create Post</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block content %}
 
 {% with messages = get_flashed_messages() %}
 {% if messages %}
@@ -23,6 +19,4 @@
     <p><label for="pic">Pic: <input type="file" name="pic"></label></p>
     <p><input type="submit" value="upload"></p>
 </form>
-
-</body>
-</html>
+{% endblock %}
