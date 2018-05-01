@@ -162,24 +162,16 @@ def profile():
                                     )
 @app.route('/newsfeed/', methods = ['GET','POST'])
 def newsfeed():
-    # if request.method == 'GET':
-    #     username = 'minaH'
-    #     conn = dbconn2.connect(DSN)
-    #     information = newsfeedOps.retrievePics(conn, username)
-    #     print str(information [0]['username'])
-    #     post = information['pic']
-    #     postuser = information['username']
-    #     postid = information['post_id']
-    #     return render_template ('newsfeed.html',username = username, posts = information)
     if 'username' in request.cookies:
         username = request.cookies.get('username')
         conn = dbconn2.connect(DSN)
         information = newsfeedOps.retrievePics(conn, username)
         if (information != None):
-            return render_template ('newsfeed.html',username = username, post = information)
+            print (information[0]['username'])
+            return render_template ('newsfeed.html',username = username, posts = information)
         else:
             flash("Follow people to see pictures on your Newsfeed!")
-            return render_template('newsfeed.html', username = username, post = None)
+            return render_template('newsfeed.html', username = username, posts = None)
     else:
          return redirect (url_for ('login'))
 
