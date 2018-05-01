@@ -177,13 +177,6 @@ def newsfeed():
         conn = dbconn2.connect(DSN)
         information = newsfeedOps.retrievePics(conn, username)
         if (information != None):
-<<<<<<< HEAD
-<<<<<<< HEAD
-            print (information[0]['username'])
-=======
->>>>>>> origin/master
-=======
->>>>>>> origin/master
             return render_template ('newsfeed.html',username = username, posts = information)
         else:
             flash("Follow people to see pictures on your Newsfeed!")
