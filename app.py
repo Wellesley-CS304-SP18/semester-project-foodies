@@ -53,6 +53,7 @@ def loginProcess():
     else:
         username = request.form['username']
         passwd = request.form['passwd']
+<<<<<<< HEAD
         conn = dbconn2.connect(DSN)
     	# If valid username and password
         if (accounts.validUsername(conn, username)):
@@ -72,6 +73,21 @@ def logout():
     resp = make_response(redirect(url_for('login')))
     resp.set_cookie('username', '', expires = 0)
     return resp
+=======
+    conn = dbconn2.connect(DSN)
+
+	# If valid username and password
+    if (accounts.validUsername(conn, username)):
+        storedHash = accounts.getHashedPassword(conn, username)
+        if(bcrypt.hashpw(passwd.encode('utf-8'), storedHash.encode('utf-8')) == storedHash.encode('utf-8')):
+    		# Save username to a cookie
+            resp = make_response(redirect(url_for('newsfeed')))
+            resp.set_cookie('username', username)
+            return resp
+    else:
+        flash("Login failed. Please try again")
+    	return login()
+>>>>>>> bf0a0632d9df2f76cc6469b6b7cdad2cf12eb722
 
 @app.route('/register/')
 def register():
