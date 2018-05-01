@@ -60,7 +60,6 @@ def loginProcess():
     if (accounts.validUsername(conn, username)):
         storedHash = accounts.getHashedPassword(conn, username)
         if(bcrypt.hashpw(passwd.encode('utf-8'), storedHash.encode('utf-8')) == storedHash.encode('utf-8')):
-            flash("Login succeeded")
     		# Save username to a cookie
             resp = make_response(redirect(url_for('newsfeed')))
             resp.set_cookie('username', username)
