@@ -53,7 +53,6 @@ def loginProcess():
     else:
         username = request.form['username']
         passwd = request.form['passwd']
-<<<<<<< HEAD
         conn = dbconn2.connect(DSN)
     	# If valid username and password
         if (accounts.validUsername(conn, username)):
@@ -73,21 +72,6 @@ def logout():
     resp = make_response(redirect(url_for('login')))
     resp.set_cookie('username', '', expires = 0)
     return resp
-=======
-    conn = dbconn2.connect(DSN)
-
-	# If valid username and password
-    if (accounts.validUsername(conn, username)):
-        storedHash = accounts.getHashedPassword(conn, username)
-        if(bcrypt.hashpw(passwd.encode('utf-8'), storedHash.encode('utf-8')) == storedHash.encode('utf-8')):
-    		# Save username to a cookie
-            resp = make_response(redirect(url_for('newsfeed')))
-            resp.set_cookie('username', username)
-            return resp
-    else:
-        flash("Login failed. Please try again")
-    	return login()
->>>>>>> bf0a0632d9df2f76cc6469b6b7cdad2cf12eb722
 
 @app.route('/register/')
 def register():
@@ -159,8 +143,8 @@ def upload():
                 flash('Upload failed {why}'.format(why=err))
                 return render_template('upload.html')
 
-@app.route('/profile/<username>', methods = ['GET'])
-def profile(username):
+@app.route('/profile/', methods = ['GET'])
+def profile():
     if not request.cookies.get('username'):
          flash("Please login")
          return redirect(url_for('login'))
@@ -177,8 +161,9 @@ def profile(username):
                                     following = following,
                                     pics = pics
                                     )
-@app.route('/search/')
-def follow():
+
+#@app.route('/search/', methods = ['POST'])
+#def search():
 
 
 @app.route('/newsfeed/', methods = ['GET','POST'])
@@ -197,10 +182,10 @@ def newsfeed():
         conn = dbconn2.connect(DSN)
         information = newsfeedOps.retrievePics(conn, username)
         if (information != None):
-            return render_template ('newsfeed.html',username = username, post = information)
+            return render_template ('newsfeed.html',username = username, posts = information)
         else:
             flash("Follow people to see pictures on your Newsfeed!")
-            return render_template('newsfeed.html', username = username, post = None)
+            return render_template('newsfeed.html', username = username, posts = None)
     else:
          return redirect (url_for ('login'))
 
