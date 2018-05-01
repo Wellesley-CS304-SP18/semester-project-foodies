@@ -19,16 +19,15 @@ def retrievePics(conn, username):
 def getFollow(conn, username):
     '''Returns the number of followers and number of other users the user is following'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('select count(*) as followers from followers where follower = %s', [username])
+    curs.execute('select count(*) as followers from followers where following = %s', [username])
     info = curs.fetchone()
     return info['followers']
 
 def getFollowing(conn, username):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('select count(*) as following from followers where following = %s', [username])
+    curs.execute('select count(*) as following from followers where follower = %s', [username])
     info = curs.fetchone()
     return info['following']
-
 
 # ================================================================
 # This starts the ball rolling, *if* the script is run as a script,

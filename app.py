@@ -36,7 +36,6 @@ def home():
 	else:
 		return redirect(url_for('newsfeed'))
 
-
 # login page
 @app.route('/login/')
 def login():
@@ -54,20 +53,25 @@ def loginProcess():
     else:
         username = request.form['username']
         passwd = request.form['passwd']
-    conn = dbconn2.connect(DSN)
+        conn = dbconn2.connect(DSN)
+    	# If valid username and password
+        if (accounts.validUsername(conn, username)):
+            storedHash = accounts.getHashedPassword(conn, username)
+            if(bcrypt.hashpw(passwd.encode('utf-8'), storedHash.encode('utf-8')) == storedHash.encode('utf-8')):
+                flash("Login succeeded")
+        		# Save username to a cookie
+                resp = make_response(redirect(url_for('newsfeed')))
+                resp.set_cookie('username', username)
+                return resp
+        else:
+            flash("Login failed. Please try again")
+            return login()
 
-	# If valid username and password
-    if (accounts.validUsername(conn, username)):
-        storedHash = accounts.getHashedPassword(conn, username)
-        if(bcrypt.hashpw(passwd.encode('utf-8'), storedHash.encode('utf-8')) == storedHash.encode('utf-8')):
-            flash("Login succeeded")
-    		# Save username to a cookie
-            resp = make_response(redirect(url_for('newsfeed')))
-            resp.set_cookie('username', username)
-            return resp
-    else:
-        flash("Login failed. Please try again")
-    	return login()
+@app.route('/logout/')
+def logout():
+    resp = make_response(redirect(url_for('login')))
+    resp.set_cookie('username', '', expires = 0)
+    return resp
 
 @app.route('/register/')
 def register():
@@ -92,23 +96,19 @@ def registerProcess():
         if((name == "") or (email == "") or (username == "") or (passwd == "") or (comPasswd == "")):
             flash("Please fill out all fields")
             return register()
-
-	conn = dbconn2.connect(DSN)
-
-	if (accounts.validUsername(conn, username)):
-		flash("Username is taken")
-		return register()
-
-	if (passwd != comPasswd):
-		flash("Passwords do not match")
-		return register()
-
-	# Register new account
-	hashed = bcrypt.hashpw(passwd.encode('utf-8'), bcrypt.gensalt())
-	# If valid username and password
-	accounts.registerUser(conn, username, hashed, name, email)
-	flash("Registration successful")
-	return redirect(url_for('login'))
+    	conn = dbconn2.connect(DSN)
+    	if (accounts.validUsername(conn, username)):
+    		flash("Username is taken")
+    		return register()
+    	if (passwd != comPasswd):
+    		flash("Passwords do not match")
+    		return register()
+    	# Register new account
+    	hashed = bcrypt.hashpw(passwd.encode('utf-8'), bcrypt.gensalt())
+    	# If valid username and password
+    	accounts.registerUser(conn, username, hashed, name, email)
+    	flash("Registration successful")
+    	return redirect(url_for('login'))
 
 @app.route('/upload/', methods = ['GET', 'POST'])
 def upload():
@@ -143,8 +143,8 @@ def upload():
                 flash('Upload failed {why}'.format(why=err))
                 return render_template('upload.html')
 
-@app.route('/profile/', methods = ['GET'])
-def profile():
+@app.route('/profile/<username>', methods = ['GET'])
+def profile(username):
     if not request.cookies.get('username'):
          flash("Please login")
          return redirect(url_for('login'))
@@ -161,6 +161,10 @@ def profile():
                                     following = following,
                                     pics = pics
                                     )
+@app.route('/search/')
+def follow():
+
+
 @app.route('/newsfeed/', methods = ['GET','POST'])
 def newsfeed():
     # if request.method == 'GET':
@@ -184,6 +188,7 @@ def newsfeed():
     else:
          return redirect (url_for ('login'))
 
+# renders images
 @app.route('/images/<fname>')
 def pic(fname):
     f = secure_filename(fname)
