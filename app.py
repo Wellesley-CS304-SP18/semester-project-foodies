@@ -63,6 +63,10 @@ def loginProcess():
                 resp = make_response(redirect(url_for('newsfeed')))
                 resp.set_cookie('username', username)
                 return resp
+            else:
+                flash("Login failed. Please try again")
+                return login()
+   
         else:
             flash("Login failed. Please try again")
             return login()
