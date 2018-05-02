@@ -162,14 +162,12 @@ def search():
     if request.method == "POST":
         search = request.form['search']
         if search == "":
-            flash('Please enter a username')
             return redirect(url_for('newsfeed'))
         else:
             conn = dbconn2.connect(DSN)
             if searchops.searchExists(conn, search):
                 return redirect(url_for('profile', username = search))
             else:
-                flash('User does not exist')
                 return redirect(url_for('newsfeed'))
 
 
