@@ -83,7 +83,6 @@ def registerProcess():
 		username = request.form['username']
 		passwd = request.form['passwd']
 		comPasswd = request.form['comPasswd']
-        print(name)
         if((name == "") or (email == "") or (username == "") or (passwd == "") or (comPasswd == "")):
             flash("Please fill out all fields")
             return register()
@@ -144,7 +143,6 @@ def profile(username):
 			followers = profops.getFollow(conn, username)
 			following = profops.getFollowing(conn, username)
 			isFollowing = profops.isFollowing(conn, session['username'], username)
-			print(isFollowing)
 			notUser = True
 			if (session['username'] == username):
 				notUser = False 
@@ -160,11 +158,9 @@ def profile(username):
 			action = request.form['follow']
 			if action == "follow":
 				profops.follow(conn, session['username'], username)
-				print("following change")
 				follow = True
 			else:
 				profops.unfollow(conn, session['username'], username)
-				print("unfollow")
 				follow = False
 			followers = profops.getFollow(conn, username)
 			following = profops.getFollowing(conn, username)
