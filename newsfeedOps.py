@@ -13,7 +13,7 @@ import dbconn2
 def retrievePics(conn, username):
     '''Returns all of the pics from the people the user follows from the database in the form of a dictionary'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor) # results as Dictionaries
-    curs.execute('select posts.pic, posts.post_id,posts.username from posts inner join followers on posts.username = followers.following where followers.follower = %s', [username])
+    curs.execute('select posts.pic, posts.post_id,posts.username from posts inner join followers on posts.username = followers.following where followers.follower = %s order by time_stamp DESC', [username])
     return curs.fetchall()
 
 # def getLikes(conn, postid):
