@@ -31,7 +31,7 @@ app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 
 @app.route('/')
 def home():
-	if (request.cookies.get('username') == None):
+	if not session['username']:
 		return redirect(url_for('login'))
 	else:
 		return redirect(url_for('newsfeed'))
@@ -59,10 +59,8 @@ def loginProcess():
             storedHash = accounts.getHashedPassword(conn, username)
             if(bcrypt.hashpw(passwd.encode('utf-8'), storedHash.encode('utf-8')) == storedHash.encode('utf-8')):
                 flash("Login succeeded")
-        		# Save username to a cookie
-                resp = make_response(redirect(url_for('newsfeed')))
-                resp.set_cookie('username', username)
-                return resp
+        		# Save username to the session
+                session['username'] = username
             else:
                 flash("Login failed. Please try again")
                 return login()
@@ -73,9 +71,8 @@ def loginProcess():
 
 @app.route('/logout/')
 def logout():
-    resp = make_response(redirect(url_for('login')))
-    resp.set_cookie('username', '', expires = 0)
-    return resp
+    session.pop('username', None)
+    return redirect(url_for('login'))
 
 @app.route('/register/')
 def register():
@@ -116,7 +113,7 @@ def registerProcess():
 
 @app.route('/upload/', methods = ['GET', 'POST'])
 def upload():
-    if not request.cookies.get('username'): #I am assuming Maxine will create the cookie once the user logs in
+    if not session['username']: #I am assuming Maxine will create the cookie once the user logs in
          flash("Please login")
          return redirect(url_for('login')) # i am assuming that Maxine will make this route
     else:
@@ -124,7 +121,7 @@ def upload():
             return render_template('upload.html')
         else:
             try:
-                username = request.cookies.get('username')
+                username = session['username']
                 description = request.form['description'] # may throw error
                 location = request.form['location']
                 time_stamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
@@ -149,13 +146,13 @@ def upload():
 
 @app.route('/profile/', methods = ['GET'])
 def profile():
-    if not request.cookies.get('username'):
+    if not session['username']:
          flash("Please login")
          return redirect(url_for('login'))
     else:
         if request.method == 'GET':
             conn = dbconn2.connect(DSN)
-            username = request.cookies.get('username')
+            username = session['username']
             followers = profops.getFollow(conn, username)
             following = profops.getFollowing(conn, username)
             pics = profops.retrievePics(conn, username)
@@ -181,8 +178,8 @@ def newsfeed():
     #     postuser = information['username']
     #     postid = information['post_id']
     #     return render_template ('newsfeed.html',username = username, posts = information)
-    if 'username' in request.cookies:
-        username = request.cookies.get('username')
+    if session['username']:
+        username = session['username']
         conn = dbconn2.connect(DSN)
         information = newsfeedOps.retrievePics(conn, username)
         if (information != None):
