@@ -58,9 +58,9 @@ def loginProcess():
         if (accounts.validUsername(conn, username)):
             storedHash = accounts.getHashedPassword(conn, username)
             if(bcrypt.hashpw(passwd.encode('utf-8'), storedHash.encode('utf-8')) == storedHash.encode('utf-8')):
-                flash("Login succeeded")
-        		# Save username to the session
-                session['username'] = username
+				# Save username to the session
+				session['username'] = username
+				return redirect(url_for('newsfeed'))
             else:
                 flash("Login failed. Please try again")
                 return login()
