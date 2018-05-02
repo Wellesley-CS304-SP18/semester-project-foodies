@@ -169,7 +169,6 @@ def profile():
 
 @app.route('/newsfeed/', methods = ['GET','POST'])
 def newsfeed():
-<<<<<<< HEAD
     # if request.method == 'GET':
     #     username = 'minaH'
     #     conn = dbconn2.connect(DSN)
@@ -181,10 +180,6 @@ def newsfeed():
     #     return render_template ('newsfeed.html',username = username, posts = information)
     if session['username']:
         username = session['username']
-=======
-    if 'username' in request.cookies:
-        username = request.cookies.get('username')
->>>>>>> origin/master
         conn = dbconn2.connect(DSN)
         information = newsfeedOps.retrievePics(conn, username)
         if (information != None):
