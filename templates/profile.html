@@ -12,7 +12,15 @@ CS304-Final Proejct
       <ul class="uk-subnav uk-subnav-divider uk-text-uppercase">
         <li>{{ followers }} followers</li>
         <li>{{ following }} following</li>
-        <li><a class="uk-button uk-button-default" href="">follow</a></li>
+		{% if not follow and notUser %}
+		<form method="POST" action="">
+			<li><input class="uk-button uk-button-default" name="follow" type="submit" method="POST" value="follow"></li>
+		</form>
+		{% elif follow and notUser %}
+		<form method="POST" action="">
+			<li><input class="uk-button uk-button-default" name="follow" type="submit" method="POST" value="unfollow"></li>
+		</form>
+		{% endif %}
       </ul>
     </div>
      </header>

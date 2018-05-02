@@ -29,6 +29,25 @@ def getFollowing(conn, username):
     info = curs.fetchone()
     return info['following']
 
+def follow(conn, follower, following):
+	curs = conn.cursor(MySQLdb.cursors.DictCursor)
+	curs.execute('insert into followers(follower,following) values (%s, %s)', [follower, following])
+	
+def unfollow(conn, follower, following):
+	curs = conn.cursor(MySQLdb.cursors.DictCursor)
+	curs.execute('delete from followers where follower = %s and following = %s', [follower, following])
+
+def isFollowing(conn, follower, following):
+	curs = conn.cursor(MySQLdb.cursors.DictCursor)
+	curs.execute('select follower from followers where follower = %s and following = %s', [follower, following])
+	info = curs.fetchone()
+	if info == None:
+		return False
+	else:
+		return True
+	
+	
+	
 # ================================================================
 # This starts the ball rolling, *if* the script is run as a script,
 # rather than just being imported.

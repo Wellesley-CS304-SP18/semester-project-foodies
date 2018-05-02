@@ -118,7 +118,7 @@ def upload():
                 f = request.files['pic']
                 mime_type = imghdr.what(f.stream)
                 if mime_type != 'jpeg':
-                    raise Exception('Not a JPEG')
+                    raise Exception('Please upload a jpeg image')
                 pic = secure_filename(str(f.filename))
                 pathname = 'images/'+ pic
                 f.save(pathname) # saves the contents in a temporarily in the images folder
@@ -132,23 +132,51 @@ def upload():
                 flash('Upload failed {why}'.format(why=err))
                 return render_template('upload.html')
 
-@app.route('/profile/<username>', methods = ['GET'])
+@app.route('/profile/<username>', methods = ['GET','POST'])
 def profile(username):
     if not session['username']:
          flash("Please log in")
          return redirect(url_for('loginProcess'))
     else:
-        if request.method == 'GET':
-            conn = dbconn2.connect(DSN)
-            followers = profops.getFollow(conn, username)
-            following = profops.getFollowing(conn, username)
-            pics = profops.retrievePics(conn, username)
-            return render_template('profile.html',
+		conn = dbconn2.connect(DSN)
+		pics = profops.retrievePics(conn, username)
+		if request.method == 'GET':
+			followers = profops.getFollow(conn, username)
+			following = profops.getFollowing(conn, username)
+			isFollowing = profops.isFollowing(conn, session['username'], username)
+			print(isFollowing)
+			notUser = True
+			if (session['username'] == username):
+				notUser = False 
+			return render_template('profile.html',
+									username = username,
+									followers = followers,
+									following = following,
+									pics = pics,
+									follow = isFollowing,
+									notUser = notUser
+									)
+		else:
+			action = request.form['follow']
+			if action == "follow":
+				profops.follow(conn, session['username'], username)
+				print("following change")
+				follow = True
+			else:
+				profops.unfollow(conn, session['username'], username)
+				print("unfollow")
+				follow = False
+			followers = profops.getFollow(conn, username)
+			following = profops.getFollowing(conn, username)
+			return render_template('profile.html',
                                     username = username,
                                     followers = followers,
                                     following = following,
-                                    pics = pics
-                                    )
+                                    pics = pics,
+									follow = follow,
+									notUser = True
+                                    )			
+									
 @app.route('/toUserProfile/')
 def toUserProfile():
     if session['username']:
