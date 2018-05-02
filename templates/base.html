@@ -23,9 +23,17 @@ href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/css/uikit.min.c
       <div class="uk-navbar-left">
           <ul class="uk-navbar-nav">
               <li><a href="{{ url_for('newsfeed') }}">Newsfeed</a></li>
-              <li><a href="{{ url_for('profile') }}">Profile</a></li>
+              <li><a href="{{ url_for('toUserProfile') }}">Profile</a></li>
               <li><a href="{{ url_for('upload') }}">Post/Upload</a></li>
               <li><a href="{{ url_for('logout') }}" type="submit" value="logout">Logout</a></li>
+              <div class="uk-navbar-item">
+              <li>
+                <form action="{{ url_for('search') }}" method = POST>
+                  <input class="uk-input uk-form-width-small" type="text" placeholder="username" name="search">
+                  <button type="submit" name="search-btn" class="uk-button uk-button-default">Go</button>
+                </form>
+              </li>
+        </div>
           </ul>
 
       </div>

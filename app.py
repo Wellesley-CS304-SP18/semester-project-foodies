@@ -17,6 +17,7 @@ import time
 import uploadops
 import accounts
 import newsfeedOps
+import searchops
 
 
 app.secret_key = 'your secret here'
@@ -29,27 +30,15 @@ app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
 # This gets us better error messages for certain common request errors
 app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 
-@app.route('/')
-def home():
-	if not session['username']:
-		return redirect(url_for('login'))
-	else:
-		return redirect(url_for('newsfeed'))
-
-# login page
-@app.route('/login/')
-def login():
-	return render_template('login.html',
-							title='Login',
-							script=url_for('loginProcess'))
-
 # Process login form
-@app.route('/login/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def loginProcess():
 	# When get, return empty login page
     if request.method == 'GET':
-        flash("login failed. Please try again")
-        return login()
+        if 'username' in session:
+            return redirect(url_for('newsfeed'))
+        return render_template('login.html',
+    							title='Login')
     else:
         username = request.form['username']
         passwd = request.form['passwd']
@@ -63,16 +52,17 @@ def loginProcess():
 				return redirect(url_for('newsfeed'))
             else:
                 flash("Login failed. Please try again")
-                return login()
-   
+                return render_template('login.html',
+            							title='Login')
         else:
-            flash("Login failed. Please try again")
-            return login()
+            flash("Invalid username. Please try again")
+            return render_template('login.html',
+                                    title='Login')
 
 @app.route('/logout/')
 def logout():
     session.pop('username', None)
-    return redirect(url_for('login'))
+    return redirect(url_for('loginProcess'))
 
 @app.route('/register/')
 def register():
@@ -109,13 +99,13 @@ def registerProcess():
     	# If valid username and password
     	accounts.registerUser(conn, username, hashed, name, email)
     	flash("Registration successful")
-    	return redirect(url_for('login'))
+    	return redirect(url_for('loginProcess'))
 
 @app.route('/upload/', methods = ['GET', 'POST'])
 def upload():
     if not session['username']: #I am assuming Maxine will create the cookie once the user logs in
          flash("Please login")
-         return redirect(url_for('login')) # i am assuming that Maxine will make this route
+         return redirect(url_for('loginProcess')) # i am assuming that Maxine will make this route
     else:
         if request.method == 'GET':
             return render_template('upload.html')
@@ -130,13 +120,11 @@ def upload():
                 if mime_type != 'jpeg':
                     raise Exception('Not a JPEG')
                 pic = secure_filename(str(f.filename))
-                #dir_path = os.path.dirname(os.path.realpath(__file__))
                 pathname = 'images/'+ pic
                 f.save(pathname) # saves the contents in a temporarily in the images folder
                 flash('Upload successful')
                 conn = dbconn2.connect(DSN)
                 uploadops.uploadPost(conn, username, description, location,         time_stamp, pic)
-                #os.remove(pathname) # deletes image
                 return render_template('upload.html',
                                        src=url_for('pic',fname=pic)
                                        )
@@ -144,15 +132,14 @@ def upload():
                 flash('Upload failed {why}'.format(why=err))
                 return render_template('upload.html')
 
-@app.route('/profile/', methods = ['GET'])
-def profile():
+@app.route('/profile/<username>', methods = ['GET'])
+def profile(username):
     if not session['username']:
-         flash("Please login")
-         return redirect(url_for('login'))
+         flash("Please log in")
+         return redirect(url_for('loginProcess'))
     else:
         if request.method == 'GET':
             conn = dbconn2.connect(DSN)
-            username = session['username']
             followers = profops.getFollow(conn, username)
             following = profops.getFollowing(conn, username)
             pics = profops.retrievePics(conn, username)
@@ -162,22 +149,32 @@ def profile():
                                     following = following,
                                     pics = pics
                                     )
+@app.route('/toUserProfile/')
+def toUserProfile():
+    if session['username']:
+        return redirect(url_for('profile', username = session['username']))
+    else:
+        flash("Please login")
+        return redirect(url_for('loginProcess'))
 
-#@app.route('/search/', methods = ['POST'])
-#def search():
+@app.route('/search/', methods = ["POST"])
+def search():
+    if request.method == "POST":
+        search = request.form['search']
+        if search == "":
+            flash('Please enter a username')
+            return redirect(url_for('newsfeed'))
+        else:
+            conn = dbconn2.connect(DSN)
+            if searchops.searchExists(conn, search):
+                return redirect(url_for('profile', username = search))
+            else:
+                flash('User does not exist')
+                return redirect(url_for('newsfeed'))
 
 
 @app.route('/newsfeed/', methods = ['GET','POST'])
 def newsfeed():
-    # if request.method == 'GET':
-    #     username = 'minaH'
-    #     conn = dbconn2.connect(DSN)
-    #     information = newsfeedOps.retrievePics(conn, username)
-    #     print str(information [0]['username'])
-    #     post = information['pic']
-    #     postuser = information['username']
-    #     postid = information['post_id']
-    #     return render_template ('newsfeed.html',username = username, posts = information)
     if session['username']:
         username = session['username']
         conn = dbconn2.connect(DSN)
@@ -188,7 +185,7 @@ def newsfeed():
             flash("Follow people to see pictures on your Newsfeed!")
             return render_template('newsfeed.html', username = username, posts = None)
     else:
-         return redirect (url_for ('login'))
+         return redirect (url_for (''))
 
 # renders images
 @app.route('/images/<fname>')
