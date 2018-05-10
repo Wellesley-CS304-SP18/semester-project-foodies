@@ -1,5 +1,6 @@
-# Created by Megan Shum
+# Created by Megan Shum & Maxine Hood & Mina Hattori
 # CS304-Final project
+# app.py
 # 2018.04.27
 #!/usr/local/bin/python2.7
 
@@ -195,7 +196,7 @@ def search():
                 return redirect(url_for('newsfeed'))
 
 
-@app.route('/newsfeed/', methods = ['GET','POST'])
+@app.route('/newsfeed/', methods=['GET'])
 def newsfeed():
     if session['username']:
         username = session['username']
@@ -208,6 +209,27 @@ def newsfeed():
             return render_template('newsfeed.html', username = username, posts = None)
     else:
          return redirect (url_for (''))
+
+@app.route('/likePostAjax/', methods = ['POST'])
+def likePostAjax():
+
+    conn = dbconn2.connect(DSN)
+    username = session['username']
+    post_id = request.form.get('post_id')
+    #likes = request.form.get('likes')
+    print("LIKE POST")
+    #print likes;
+
+    #update thes likes for the post 
+    newsfeedOps.updateLikes(conn,post_id,username)
+
+    #get the new number movie information
+    newLikes = newsfeedOps.getnewLikes(conn,post_id)
+
+    print("UPDATED")
+
+    return jsonify({"post_id":post_id, "likes": newLikes})
+
 
 # renders images
 @app.route('/images/<fname>')

@@ -13,12 +13,26 @@ import dbconn2
 def retrievePics(conn, username):
     '''Returns all of the pics from the people the user follows from the database in the form of a dictionary'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor) # results as Dictionaries
-    curs.execute('select posts.pic, posts.post_id,posts.username from posts inner join followers on posts.username = followers.following where followers.follower = %s order by time_stamp DESC', [username])
-    return curs.fetchall()
+    curs.execute('select posts.pic, posts.post_id,posts.username, posts.likes, posts.location from posts inner join followers on posts.username = followers.following where followers.follower = %s order by time_stamp DESC', [username])
+    information= curs.fetchall()
+    return information
 
-# def getLikes(conn, postid):
-#     '''Returns the number of followers and number of other users the user is following'''
-#     curs = conn.cursor(MySQLdb.cursors.DictCursor)
+def updateLikes(conn, postid,username):
+    '''Returns the number of followers and number of other users the user is following'''
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('insert into likes (post_id, username) values (%s, %s)',[postid,username])
+    curs.execute('select COUNT(post_id) from likes where post_id=%s group by post_id' ,[postid]); 
+    count = curs.fetchone();
+    likes = count['COUNT(post_id)']
+    curs.execute('update posts set likes = %s where post_id = %s',[likes, postid])
+
+def getnewLikes(conn, postid):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('select likes from posts where post_id = %s',[postid])
+    info = curs.fetchone()
+    return info['likes']
+
+
 
 # def getComments(conn, postid):
 #     curs = conn.cursor(MySQLdb.cursors.DictCursor)
