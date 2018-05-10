@@ -146,7 +146,7 @@ def profile(username):
 			isFollowing = profops.isFollowing(conn, session['username'], username)
 			notUser = True
 			if (session['username'] == username):
-				notUser = False 
+				notUser = False
 			return render_template('profile.html',
 									username = username,
 									followers = followers,
@@ -172,8 +172,8 @@ def profile(username):
                                     pics = pics,
 									follow = follow,
 									notUser = True
-                                    )			
-									
+                                    )
+
 @app.route('/toUserProfile/')
 def toUserProfile():
     if session['username']:
@@ -220,7 +220,7 @@ def likePostAjax():
     print("LIKE POST")
     #print likes;
 
-    #update thes likes for the post 
+    #update thes likes for the post
     newsfeedOps.updateLikes(conn,post_id,username)
 
     #get the new number movie information
@@ -228,7 +228,7 @@ def likePostAjax():
 
     print("UPDATED")
 
-    return jsonify({"post_id":post_id, "likes": newLikes})
+    return jsonify({"likes": newLikes})
 
 
 # renders images
