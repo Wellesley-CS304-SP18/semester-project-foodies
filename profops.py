@@ -13,7 +13,7 @@ import dbconn2
 def retrievePics(conn, username):
     '''Returns all of the user's pic post from the database in the form of a dictionary'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor) # results as Dictionaries
-    curs.execute('select pic from posts where username = %s', [username])
+    curs.execute('select pic, description from posts where username = %s', [username])
     return curs.fetchall()
 
 def getFollow(conn, username):
@@ -32,7 +32,7 @@ def getFollowing(conn, username):
 def follow(conn, follower, following):
 	curs = conn.cursor(MySQLdb.cursors.DictCursor)
 	curs.execute('insert into followers(follower,following) values (%s, %s)', [follower, following])
-	
+
 def unfollow(conn, follower, following):
 	curs = conn.cursor(MySQLdb.cursors.DictCursor)
 	curs.execute('delete from followers where follower = %s and following = %s', [follower, following])
@@ -45,9 +45,9 @@ def isFollowing(conn, follower, following):
 		return False
 	else:
 		return True
-	
-	
-	
+
+
+
 # ================================================================
 # This starts the ball rolling, *if* the script is run as a script,
 # rather than just being imported.

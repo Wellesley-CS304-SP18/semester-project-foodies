@@ -196,19 +196,34 @@ def search():
                 return redirect(url_for('newsfeed'))
 
 
-@app.route('/newsfeed/', methods=['GET'])
+@app.route('/newsfeed/', methods=['GET', 'POST'])
 def newsfeed():
-    if session['username']:
-        username = session['username']
-        conn = dbconn2.connect(DSN)
-        information = newsfeedOps.retrievePics(conn, username)
-        if (information != None):
-            return render_template ('newsfeed.html',username = username, posts = information)
+    if request.method == 'GET':
+        if session['username']:
+            username = session['username']
+            conn = dbconn2.connect(DSN)
+            information = newsfeedOps.retrievePics(conn, username)
+            if (information != None):
+                return render_template ('newsfeed.html',username = username, posts = information)
+            else:
+                flash("Follow people to see pictures on your Newsfeed!")
+                return render_template('newsfeed.html', username = username, posts = None)
         else:
-            flash("Follow people to see pictures on your Newsfeed!")
-            return render_template('newsfeed.html', username = username, posts = None)
+             return redirect (url_for (''))
     else:
-         return redirect (url_for (''))
+        username = session['username']
+        comment = request.form['comment']
+        time_stamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
+        post_id = request.form['post_id']
+        conn = dbconn2.connect(DSN)
+        newsfeedOps.addComment(conn, username, post_id, comment, time_stamp)
+        return redirect(url_for('newsfeed'))
+
+@app.route('/explore/', methods = ['GET'])
+def explore():
+    conn = dbconn2.connect(DSN)
+    pics = newsfeedOps.getExplorePosts(conn)
+    return render_template('explore.html', pics=pics)
 
 @app.route('/likePostAjax/', methods = ['POST'])
 def likePostAjax():

@@ -62,10 +62,10 @@ ENGINE = InnoDB;
 
 create table comments(
 	username varchar(50) not null,
-	post_id integer unsigned auto_increment,
+	post_id integer unsigned,
 	comment varchar(300) not null,
 	time_stamp datetime not null,
-	primary key (username, post_id),
+	comment_id integer unsigned not null auto_increment primary key,
 	INDEX(username),
 	INDEX(post_id),
 	foreign key (username) references user(username) on delete cascade,

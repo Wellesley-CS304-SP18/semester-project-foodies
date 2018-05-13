@@ -25,10 +25,12 @@ CS304-Final Proejct
     </div>
      </header>
   </article>
-  <div class = "uk-grid-medium uk-child-width-1-3@m" uk-grid>
+  <div class = "uk-grid-medium uk-child-width-1-3@m" uk-grid uk-lightbox="animation: slide">
     {% for pic in pics %}
       <div class = "uk-height-medium" style= "overflow: hidden;">
-        <img src="{{url_for('pic',fname=pic['pic'])}}" alt="{{pic['pic']}}">
+        <a class="uk-inline" href="{{url_for('pic',fname=pic['pic'])}}" data-caption="{{pic['description']}}">
+          <img src="{{url_for('pic',fname=pic['pic'])}}" alt="{{pic['pic']}}">
+        </a>
       </div>
     {% endfor %}
   </div>

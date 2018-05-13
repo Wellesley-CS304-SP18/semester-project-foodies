@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<h1> News Feed for {{username}}</h1>
+<h1 class="uk-margin-left"> News Feed for {{username}}</h1>
 
 <div id = "uk-grid">
   {% for post in posts %}
@@ -12,15 +12,46 @@
         <h4>{{post['location']}}</h4>
       </div>
       <div class="uk-card-media-bottom uk-align-center ">
-        <div class="uk-grid-small uk-flex-middle" uk-grid>
+        <div class="uk-grid-small uk-flex-middle uk-margin-left" uk-grid>
           <p><img width="500" height="500" src="{{url_for('pic',fname=post['pic'])}}" alt="{{post['pic']}}"></p>
         </div>
       </div>
       <div class="uk-card-footer uk-card-small uk-card-default uk-align-center" id = "footer">
+        <h3>{{post['description']}}</h3>
+        {% if not post['iLike'] %}
         <form  post_id = {{post['post_id']}} action="" method="POST" id="likeform">
           <input class="uk-button uk-button-default" id="likeButton" value = "like" name="likeButton" type = "button"></input>
         </form>
+        {% else %}
+        <form  post_id = {{post['post_id']}} action="" method="POST" id="likeform">
+          <input class="uk-button uk-button-default" id="likeButton" value = "liked" name="likeButton" type = "button" disabled="disabled"></input>
+        </form>
+        {% endif %}
         <h3 class = 'likes' likes = {{post['likes']}}>{{post['likes']}} likes</h3>
+        {% for comment in post['comments'] %}
+          <ul class = "uk-comment-list">
+            <article class="uk-comment uk-comment-primary">
+              <header class="uk-comment-header uk-grid-medium uk-flex-middle" uk-grid>
+              <div class="uk-width-expand">
+                  <h4 class="uk-comment-title uk-margin-remove"><a class="uk-link-reset" href="{{url_for("profile", username = comment['username'])}}">{{comment['username']}}</a></h4>
+                  <ul class="uk-comment-meta uk-subnav uk-subnav-divider uk-margin-remove-top">
+                      <li><a href="#">{{comment['time_stamp']}}</a></li>
+                  </ul>
+              </div>
+            </header>
+            <div class="uk-comment-body">
+                <p>{{comment['comment']}}</p>
+            </div>
+          </article>
+          </ul>
+        {% endfor %}
+        <form method = "post" action = "">
+          <div class="uk-margin">
+            <input type = "hidden" name="post_id" value ={{post['post_id']}}>
+            <input class="uk-input uk-form-width-large" type="text" placeholder="comment..." name ="comment">
+            <input class="uk-button uk-button-default" id="commentButton" value = "comment" name="commentButton" type = "submit"></input>
+          </div>
+        </form>
       </div>
     </div>
   </div>
@@ -30,25 +61,22 @@
 
   <script src="//code.jquery.com/jquery-3.2.1.min.js"></script>
   <script>
-    console.log("JAVASCRIPT");
     var url_for_likePostAjax = "/likePostAjax/";
     $("#uk-grid").on("click", '[name=likeButton]',function (event) {
 
         //retrieving the different values necessary to update likes
         var $post = $(event.target);
         var likes = $post.closest(".uk-card-footer").find(".likes");
-
         var post_id = $post.closest("[post_id]").attr('post_id');
         //posts the average rating value returend by setRatingAjax route in app.py
         $.post('/likePostAjax/', {"post_id":post_id},
           function showLikes(dict) {
             likes.text(dict.likes + " likes");
+            $post.prop("disabled", true);
+            $post.val("liked");
           },
           "json");
-
       });
-
-
     </script>
 
   {% endblock %}
