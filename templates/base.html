@@ -3,22 +3,8 @@ Created by Megan Shum
 CS304-Final project
 2018.04.30
 -->
-<!doctype html>
-<html>
-<head>
-  <!-- UIkit CSS -->
-  <link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/css/uikit.min.css"/>
-
-  <!-- UIkit JS -->
- <script src=
-"https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/js/uikit.min.js">
- </script>
- <script src=
- "https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/js/uikit-icons.min.js">
- </script>
-</head>
-<body>
+{% extends "main.html" %}
+{% block outer_content %}
   <div uk-sticky="sel-target: .uk-navbar-container; cls-active: uk-navbar-sticky">
     <nav class="uk-navbar-container" uk-navbar>
         <div class="uk-navbar-left">
@@ -40,7 +26,8 @@ href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/css/uikit.min.c
         </div>
     </nav>
   </div>
-  {% block content %}
+  {% block inner_content %}
+  {% endblock%}
   {% endblock%}
 </body>
 </html>

@@ -1,25 +1,8 @@
-<!-- This file displays the register page and takes registration data. 
+<!-- This file displays the register page and takes registration data.
 created by: Maxine Hood-->
 
-<!doctype html>
-<html>
-  <head>
-    <title>Foodies</title>
-    <head>
-      <!-- UIkit CSS -->
-      <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/css/uikit.min.css"/>
-
-      <!-- UIkit JS -->
-     <script src=
-    "https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/js/uikit.min.js">
-     </script>
-     <script src=
-     "https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/js/uikit-icons.min.js">
-     </script>
-    </head>
-  </head>
-<body>
+{% extends "main.html" %}
+{% block outer_content %}
     <div class = "uk-margin-left uk-margin-top" id="navigation">
       <ul>
 			<li><a href={{ url_for('loginProcess')}}>Login</a></li>
@@ -51,5 +34,4 @@ created by: Maxine Hood-->
 		<p><button type="submit">submit</button></p>
   </form>
     </div>
-  </body>
-</html>
+{% endblock%}

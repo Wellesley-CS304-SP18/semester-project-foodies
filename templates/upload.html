@@ -1,22 +1,22 @@
 {% extends "base.html" %}
-{% block content %}
-
-{% with messages = get_flashed_messages() %}
-{% if messages %}
-<p>Flashes:</p>
-<ul>
-    {% for message in messages %}
-    <li>{{ message }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
-{% endwith %}
-
-<p>Create your post below!
-<form method="post" action="" enctype="multipart/form-data">
-    <p><label for="description">Description: <input type="text" name="description"></label></p>
-    <p><label for="location">Location: <input type="text" name="location"></label></p>
-    <p><label for="pic">Pic: <input type="file" name="pic"></label></p>
-    <p><input type="submit" value="upload"></p>
-</form>
+{% block inner_content %}
+<div class = "uk-margin-left uk-margin-top">
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+  <p>Flashes:</p>
+  <ul>
+      {% for message in messages %}
+      <li>{{ message }}</li>
+      {% endfor %}
+  </ul>
+  {% endif %}
+  {% endwith %}
+  <p>Create your post below!
+  <form method="post" action="" enctype="multipart/form-data">
+      <p><label for="description">Description: <input type="text" name="description"></label></p>
+      <p><label for="location">Location: <input type="text" name="location"></label></p>
+      <p><label for="pic">Pic: <input type="file" name="pic"></label></p>
+      <button value="upload"type="submit" class="uk-button uk-button-default">Upload</button>
+  </form>
+</div>
 {% endblock %}
