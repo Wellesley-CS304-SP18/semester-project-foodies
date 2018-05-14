@@ -1,4 +1,6 @@
-# This file has all the SQL Queries necessary for app.py
+# accounts.py
+# This file has the SQL Queries necessary for login and registration
+# Created by Maxine Hood
 
 import sys
 import MySQLdb
