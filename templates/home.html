@@ -1,0 +1,47 @@
+<!-- This file displays the  -->
+<!doctype html>
+<html>
+<head>
+<title> Foodies </title>
+<head>
+      <!-- UIkit CSS -->
+      <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/css/uikit.min.css"/>
+
+      <!-- UIkit JS -->
+     <script src=
+    "https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/js/uikit.min.js">
+     </script>
+     <script src=
+     "https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/js/uikit-icons.min.js">
+     </script>
+    </head>
+	<style>
+	h1, h4 {
+    text-align: center;
+	line-height:0.3;
+	}
+	.uk-button-group {
+	align: center;
+	}
+	</style>
+</head>
+<body> 
+
+	<div class="uk-cover-container" uk-height-viewport>
+		<img src="images/yay.jpg" alt="" uk-cover>
+		<div class="uk-overlay uk-overlay-default uk-position-center ">
+			<h1>Foodies</h1>
+			<h4>Pic. Post. Eat.</h4>
+			<div>
+				<div class="uk-button-group">
+					<button class="uk-button uk-button-danger"><a href={{ url_for('loginProcess')}}>Login</a></button>
+					<button class="uk-button uk-button-danger"><a href={{ url_for('register')}}>Register</a></button>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	
+</body>
+</html>

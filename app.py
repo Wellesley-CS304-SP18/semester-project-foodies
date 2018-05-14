@@ -31,8 +31,14 @@ app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
 # This gets us better error messages for certain common request errors
 app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 
+# Home page
+@app.route('/')
+def home():
+	return render_template('home.html',
+							title='Foodies')
+
 # Process login form
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/login/', methods=['GET', 'POST'])
 def loginProcess():
 	# When get, return empty login page
     if request.method == 'GET':
