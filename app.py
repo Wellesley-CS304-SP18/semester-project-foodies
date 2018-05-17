@@ -253,7 +253,6 @@ def unlikePostAjax():
     conn = dbconn2.connect(DSN)
     username = session['username']
     post_id = request.form.get('post_id')
-
     #update thes likes for the post
     newsfeedOps.updateUnlikes(conn,post_id,username)
 
