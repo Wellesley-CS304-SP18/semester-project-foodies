@@ -38,6 +38,18 @@ def updateLikes(conn, postid,username):
     likes = count['COUNT(post_id)']
     curs.execute('update posts set likes = %s where post_id = %s',[likes, postid])
 
+def updateUnlikes (conn, postid, username):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('delete from likes where post_id = %s and username = %s',[postid,username])
+    curs.execute('select COUNT(post_id) from likes where post_id=%s group by post_id' ,[postid])
+    count = curs.fetchone()
+    if not count:
+        likes = 0; 
+    else:
+        likes = count['COUNT(post_id)'] 
+    curs.execute('update posts set likes = %s where post_id = %s',[likes, postid])
+
+
 def getnewLikes(conn, postid):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     curs.execute('select likes from posts where post_id = %s',[postid])

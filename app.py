@@ -237,9 +237,6 @@ def likePostAjax():
     conn = dbconn2.connect(DSN)
     username = session['username']
     post_id = request.form.get('post_id')
-    #likes = request.form.get('likes')
-    print("LIKE POST")
-    #print likes;
 
     #update thes likes for the post
     newsfeedOps.updateLikes(conn,post_id,username)
@@ -247,7 +244,22 @@ def likePostAjax():
     #get the new number movie information
     newLikes = newsfeedOps.getnewLikes(conn,post_id)
 
-    print("UPDATED")
+
+    return jsonify({"likes": newLikes})
+
+@app.route('/unlikePostAjax/', methods = ['POST'])
+def unlikePostAjax():
+
+    conn = dbconn2.connect(DSN)
+    username = session['username']
+    post_id = request.form.get('post_id')
+
+    #update thes likes for the post
+    newsfeedOps.updateUnlikes(conn,post_id,username)
+
+    #get the new number movie information
+    newLikes = newsfeedOps.getnewLikes(conn,post_id)
+
 
     return jsonify({"likes": newLikes})
 
