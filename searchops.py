@@ -15,10 +15,7 @@ def searchExists(conn, username):
     curs = conn.cursor(MySQLdb.cursors.DictCursor) # results as Dictionaries
     curs.execute('select username from user where username = %s', [username])
     exists = curs.fetchone()
-    if exists:
-        return True
-    return False
-
+    return bool(exists)
 # ================================================================
 # This starts the ball rolling, *if* the script is run as a script,
 # rather than just being imported.

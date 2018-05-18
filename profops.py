@@ -45,10 +45,7 @@ def isFollowing(conn, follower, following):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     curs.execute('select follower from followers where follower = %s and following = %s', [follower, following])
     info = curs.fetchone()
-    if info == None:
-        return False
-    else:
-        return True
+    return (info is not None)
 
 def numPosts(conn, username):
     '''Returns the total number of posts a user has created'''

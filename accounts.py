@@ -11,10 +11,7 @@ def validPassword(conn, username, password):
 	curs = conn.cursor(MySQLdb.cursors.DictCursor)
 	curs.execute('select password from user where username=%s', [username])
 	result = curs.fetchone()
-	if (bcrypt.hashpw(password.encode('utf-8'), result['password'].encode('utf-8')) == result['password'].encode('utf-8')):
-		return True
-	else:
-		return False
+	return (bcrypt.hashpw(password.encode('utf-8'), result['password'].encode('utf-8')) == result['password'].encode('utf-8'))
 
 def getHashedPassword(conn, username):
 	curs = conn.cursor(MySQLdb.cursors.DictCursor)
@@ -30,10 +27,7 @@ def validUsername(conn, username):
 	curs = conn.cursor(MySQLdb.cursors.DictCursor)
 	curs.execute('select username from user where username=%s', [username])
 	all = curs.fetchone()
-	if all is None:
-		return False
-	else:
-		return True
+	return (all is not None)
 
 # =================================================================
 

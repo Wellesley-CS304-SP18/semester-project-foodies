@@ -82,7 +82,6 @@ def register():
 def registerProcess():
 	# When get, return empty login page
 	if request.method == 'GET':
-		flash("Registration failed. Please try again")
 		return register()
 	else:
 		name = request.form['name']
