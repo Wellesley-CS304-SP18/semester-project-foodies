@@ -11,6 +11,7 @@ import dbconn2
 # The functions that do most of the work.
 
 def uploadPost(conn, username, description, location, time_stamp, pathname):
+    '''Inserts post in Posts table'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor) # results as Dictionaries
     curs.execute('insert into posts(username, description, location, time_stamp, pic) values(%s, %s, %s, %s, %s)', [username, description, location, time_stamp, pathname])
 

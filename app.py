@@ -109,9 +109,9 @@ def registerProcess():
 
 @app.route('/upload/', methods = ['GET', 'POST'])
 def upload():
-    if not session['username']: #I am assuming Maxine will create the cookie once the user logs in
+    if 'username' not in session:
          flash("Please login")
-         return redirect(url_for('loginProcess')) # i am assuming that Maxine will make this route
+         return redirect(url_for('loginProcess'))
     else:
         if request.method == 'GET':
             return render_template('upload.html')
@@ -125,7 +125,9 @@ def upload():
                 mime_type = imghdr.what(f.stream)
                 if mime_type != 'jpeg':
                     raise Exception('Please upload a jpeg image')
-                pic = secure_filename(str(f.filename))
+                # generating a unique filename with the use of timestamp
+                file = f.filename.split('.')[0]+time_stamp+".jpeg"
+                pic = secure_filename(str(file))
                 pathname = 'images/'+ pic
                 f.save(pathname) # saves the contents in a temporarily in the images folder
                 flash('Upload successful')
@@ -140,13 +142,14 @@ def upload():
 
 @app.route('/profile/<username>', methods = ['GET','POST'])
 def profile(username):
-    if not session['username']:
+    if 'username' not in session:
          flash("Please log in")
          return redirect(url_for('loginProcess'))
     else:
-		conn = dbconn2.connect(DSN)
-		pics = profops.retrievePics(conn, username)
-		if request.method == 'GET':
+        conn = dbconn2.connect(DSN)
+        pics = profops.retrievePics(conn, username)
+        numPosts = profops.numPosts(conn, username)
+        if request.method == 'GET':
 			followers = profops.getFollow(conn, username)
 			following = profops.getFollowing(conn, username)
 			isFollowing = profops.isFollowing(conn, session['username'], username)
@@ -159,9 +162,10 @@ def profile(username):
 									following = following,
 									pics = pics,
 									follow = isFollowing,
-									notUser = notUser
+									notUser = notUser,
+                                    numPosts = numPosts
 									)
-		else:
+        else:
 			action = request.form['follow']
 			if action == "follow":
 				profops.follow(conn, session['username'], username)
@@ -177,12 +181,13 @@ def profile(username):
                                     following = following,
                                     pics = pics,
 									follow = follow,
-									notUser = True
+									notUser = True,
+                                    numPosts = numPosts
                                     )
 
 @app.route('/toUserProfile/')
 def toUserProfile():
-    if session['username']:
+    if 'username' in session:
         return redirect(url_for('profile', username = session['username']))
     else:
         flash("Please login")
@@ -190,76 +195,75 @@ def toUserProfile():
 
 @app.route('/search/', methods = ["POST"])
 def search():
-    if request.method == "POST":
-        search = request.form['search']
-        if search == "":
-            return redirect(url_for('newsfeed'))
-        else:
-            conn = dbconn2.connect(DSN)
-            if searchops.searchExists(conn, search):
-                return redirect(url_for('profile', username = search))
-            else:
+    if 'username' in session:
+        if request.method == "POST":
+            search = request.form['search']
+            if search == "":
                 return redirect(url_for('newsfeed'))
+            else:
+                conn = dbconn2.connect(DSN)
+                if searchops.searchExists(conn, search):
+                    return redirect(url_for('profile', username = search))
+                else:
+                    return redirect(url_for('newsfeed'))
+    else:
+        flash("Please log in")
+        return redirect(url_for('loginProcess'))
 
 
 @app.route('/newsfeed/', methods=['GET', 'POST'])
 def newsfeed():
-    if request.method == 'GET':
-        if session['username']:
-            username = session['username']
-            conn = dbconn2.connect(DSN)
-            information = newsfeedOps.retrievePics(conn, username)
-            if (information != None):
-                return render_template ('newsfeed.html',username = username, posts = information)
-            else:
-                flash("Follow people to see pictures on your Newsfeed!")
-                return render_template('newsfeed.html', username = username, posts = None)
+    if 'username' in session:
+        if request.method == 'GET':
+                username = session['username']
+                conn = dbconn2.connect(DSN)
+                information = newsfeedOps.retrievePics(conn, username)
+                if (information != None):
+                    return render_template ('newsfeed.html',username = username, posts = information)
+                else:
+                    flash("Follow people to see pictures on your Newsfeed!")
+                    return render_template('newsfeed.html', username = username, posts = None)
         else:
-             return redirect (url_for (''))
+            username = session['username']
+            comment = request.form['comment']
+            time_stamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
+            post_id = request.form['post_id']
+            conn = dbconn2.connect(DSN)
+            newsfeedOps.addComment(conn, username, post_id, comment, time_stamp)
+            return redirect(url_for('newsfeed'))
     else:
-        username = session['username']
-        comment = request.form['comment']
-        time_stamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
-        post_id = request.form['post_id']
-        conn = dbconn2.connect(DSN)
-        newsfeedOps.addComment(conn, username, post_id, comment, time_stamp)
-        return redirect(url_for('newsfeed'))
+        return redirect(url_for('loginProcess'))
 
 @app.route('/explore/', methods = ['GET'])
 def explore():
-    conn = dbconn2.connect(DSN)
-    pics = newsfeedOps.getExplorePosts(conn)
-    return render_template('explore.html', pics=pics)
+    if 'username' in session:
+        conn = dbconn2.connect(DSN)
+        pics = newsfeedOps.getExplorePosts(conn)
+        return render_template('explore.html', pics=pics)
+    else:
+        flash("Please log in")
+        return redirect(url_for('loginProcess'))
 
 @app.route('/likePostAjax/', methods = ['POST'])
 def likePostAjax():
-
     conn = dbconn2.connect(DSN)
     username = session['username']
     post_id = request.form.get('post_id')
-
-    #update thes likes for the post
+    #update the likes for the post
     newsfeedOps.updateLikes(conn,post_id,username)
-
     #get the new number movie information
     newLikes = newsfeedOps.getnewLikes(conn,post_id)
-
-
     return jsonify({"likes": newLikes})
 
 @app.route('/unlikePostAjax/', methods = ['POST'])
 def unlikePostAjax():
-
     conn = dbconn2.connect(DSN)
     username = session['username']
     post_id = request.form.get('post_id')
     #update thes likes for the post
     newsfeedOps.updateUnlikes(conn,post_id,username)
-
     #get the new number movie information
     newLikes = newsfeedOps.getnewLikes(conn,post_id)
-
-
     return jsonify({"likes": newLikes})
 
 
