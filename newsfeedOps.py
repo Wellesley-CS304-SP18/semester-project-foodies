@@ -13,7 +13,7 @@ import dbconn2
 def retrievePics(conn, username):
     '''Returns all of the pics from the people the user follows from the database in the form of a dictionary'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor) # results as Dictionaries
-    curs.execute('''select posts.pic, posts.post_id,posts.username, posts.likes, posts.location, posts.description from posts inner join followers on posts.username = followers.following where followers.follower = %s order by time_stamp DESC limit 30''', [username])
+    curs.execute('''select posts.pic, posts.post_id,posts.username, posts.likes, posts.location, posts.description from posts inner join followers on posts.username = followers.following where followers.follower = %s order by time_stamp DESC limit 13''', [username])
     posts= curs.fetchall()
     for post in posts:
         comments = getComments(conn,post['post_id'])
@@ -45,9 +45,9 @@ def updateUnlikes (conn, postid, username):
     curs.execute('select COUNT(post_id) from likes where post_id=%s group by post_id' ,[postid])
     count = curs.fetchone()
     if not count:
-        likes = 0; 
+        likes = 0;
     else:
-        likes = count['COUNT(post_id)'] 
+        likes = count['COUNT(post_id)']
     curs.execute('update posts set likes = %s where post_id = %s',[likes, postid])
 
 

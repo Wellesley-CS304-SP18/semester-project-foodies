@@ -6,8 +6,9 @@ import sys
 import MySQLdb
 import dbconn2
 import bcrypt
-		
+
 def validPassword(conn, username, password):
+	'''checks if the password is the correct password used to register'''
 	curs = conn.cursor(MySQLdb.cursors.DictCursor)
 	curs.execute('select password from user where username=%s', [username])
 	result = curs.fetchone()
