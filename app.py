@@ -62,11 +62,13 @@ def loginProcess():
 				session['username'] = username
 				return redirect(url_for('newsfeed'))
             else:
+				# bad password
                 flash("Login failed. Please try again")
                 return render_template('login.html',
             							title='Login')
         else:
-            flash("Invalid username. Please try again")
+			# bad username
+            flash("Login failed. Please try again")
             return render_template('login.html',
                                     title='Login')
 
@@ -96,23 +98,24 @@ def registerProcess():
 		username = request.form['username']
 		passwd = request.form['passwd']
 		comPasswd = request.form['comPasswd']
-        if((name == "") or (email == "") or (username == "") or (passwd == "") or (comPasswd == "")):
-            flash("Please fill out all fields")
-            return register()
+        # Sends back to register page if not all the fields were filled in. 
+		if((name == "") or (email == "") or (username == "") or (passwd == "") or (comPasswd == "")):
+			flash("Please fill out all fields")
+			return register()
     	conn = dbconn2.connect(DSN)
+		# Checks for available username
     	if (accounts.validUsername(conn, username)):
-    		flash("Username is taken")
-    		return register()
+			flash("Username is taken")
+			return register()
+		# Checks that password matches
     	if (passwd != comPasswd):
     		flash("Passwords do not match")
     		return register()
-    	# Register new account
+    	# Hash password and register new account
     	hashed = bcrypt.hashpw(passwd.encode('utf-8'), bcrypt.gensalt())
-    	# If valid username and password
     	accounts.registerUser(conn, username, hashed, name, email)
     	flash("Registration successful")
     	return redirect(url_for('loginProcess'))
-
 
 #-------------------------------------------------------------------------
 # All pages and funcitons for photos
@@ -121,38 +124,42 @@ def registerProcess():
 # Takes the upload data and saves image to database.
 @app.route('/upload/', methods = ['GET', 'POST'])
 def upload():
-    if 'username' not in session:
-         flash("Please login")
-         return redirect(url_for('loginProcess'))
-    else:
-        if request.method == 'GET':
-            return render_template('upload.html',
+	# Check for logged in user
+	if 'username' not in session:
+		flash("Please login")
+		return redirect(url_for('loginProcess'))
+	else:
+		if request.method == 'GET':
+			return render_template('upload.html',
                                     profuser = session['username'])
-        else:
-            try:
-                username = session['username']
-                description = request.form['description'] # may throw error
-                location = request.form['location']
-                time_stamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
-                f = request.files['pic']
-                mime_type = imghdr.what(f.stream)
-                if mime_type != 'jpeg':
-                    raise Exception('Please upload a jpeg image')
-                # generating a unique filename with the use of timestamp
-                file = f.filename.split('.')[0]+time_stamp+".jpeg"
-                pic = secure_filename(str(file))
-                pathname = 'images/'+ pic
-                f.save(pathname) # saves the contents in a temporarily in the images folder
-                flash('Upload successful')
-                conn = dbconn2.connect(DSN)
-                uploadops.uploadPost(conn, username, description, location,         time_stamp, pic)
-                return render_template('upload.html',
+		else:
+			try:
+				username = session['username']
+				description = request.form['description'] # may throw error
+				location = request.form['location']
+				time_stamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
+				f = request.files['pic']
+                
+				mime_type = imghdr.what(f.stream)
+				if mime_type != 'jpeg':
+					raise Exception('Please upload a jpeg image')
+                
+				# generating a unique filename with the use of timestamp
+				file = f.filename.split('.')[0]+time_stamp+".jpeg"
+				pic = secure_filename(str(file))
+				pathname = 'images/'+ pic
+				f.save(pathname) # saves the contents in a temporarily in the images folder
+				flash('Upload successful')
+                
+				conn = dbconn2.connect(DSN)
+				uploadops.uploadPost(conn, username, description, location, time_stamp, pic)
+				return render_template('upload.html',
                                        src=url_for('pic',fname=pic),
                                        profuser = session['username']
                                        )
-            except Exception as err:
-                flash('Upload failed {why}'.format(why=err))
-                return render_template('upload.html',
+			except Exception as err:
+				flash('Upload failed {why}'.format(why=err))
+				return render_template('upload.html',
                                         profuser = session['username'])
 
 
@@ -171,18 +178,22 @@ def pic(fname):
 # Displays the profile for a given username										
 @app.route('/profile/<username>', methods = ['GET','POST'])
 def profile(username):
-    if 'username' not in session:
-         flash("Please log in")
-         return redirect(url_for('loginProcess'))
-    else:
-        conn = dbconn2.connect(DSN)
+# Check for logged in user
+	if 'username' not in session:
+		flash("Please log in")
+		return redirect(url_for('loginProcess'))
+	else:
+		conn = dbconn2.connect(DSN)
         pics = profops.retrievePics(conn, username)
         numPosts = profops.numPosts(conn, username)
+		
+		# Get data for displayal on profile page
         if request.method == 'GET':
 			followers = profops.getFollow(conn, username)
 			following = profops.getFollowing(conn, username)
 			isFollowing = profops.isFollowing(conn, session['username'], username)
 			notUser = True
+			# Check for user's own profile
 			if (session['username'] == username):
 				notUser = False
 			return render_template('profile.html',
@@ -193,13 +204,12 @@ def profile(username):
 									follow = isFollowing,
 									notUser = notUser,
                                     numPosts = numPosts,
-                                    profuser = session['username']
-									)
+                                    profuser = session['username'])
         else:
-            isfollowing = profops.isFollowing(conn, session['username'], username)
-            followers = profops.getFollow(conn, username)
-            following = profops.getFollowing(conn, username)
-            return render_template('profile.html',
+			isfollowing = profops.isFollowing(conn, session['username'], username)
+			followers = profops.getFollow(conn, username)
+			following = profops.getFollowing(conn, username)
+			return render_template('profile.html',
                                     username = username,
                                     followers = followers,
                                     following = following,
@@ -207,8 +217,7 @@ def profile(username):
 									follow = isfollowing,
 									notUser = True,
                                     numPosts = numPosts,
-                                    profuser = session['username']
-                                    )
+                                    profuser = session['username'])
 
 
 # Searches for a username and displays that profile
@@ -217,14 +226,17 @@ def search():
     if 'username' in session:
         if request.method == "POST":
             search = request.form['search']
+            # Return to newsfeed
             if search == "":
                 return redirect(url_for('newsfeed'))
             else:
+			    # Redirect to user's profile
                 conn = dbconn2.connect(DSN)
                 if searchops.searchExists(conn, search):
                     return redirect(url_for('profile', username = search))
+				# Return to newsfeed
                 else:
-                    return redirect(url_for('newsfeed',profuser = session['username'] ))
+					return redirect(url_for('newsfeed',profuser = session['username'] ))
     else:
         flash("Please log in")
         return redirect(url_for('loginProcess'))
@@ -234,21 +246,27 @@ def search():
 @app.route('/newsfeed/', methods=['GET', 'POST'])
 def newsfeed():
     if 'username' in session:
+	    # Display newsfeed
         if request.method == 'GET':
                 username = session['username']
                 conn = dbconn2.connect(DSN)
+				# Get photos from people you follow
                 information = newsfeedOps.retrievePics(conn, username)
+				# Renders page with photos
                 if (information != None):
                     return render_template ('newsfeed.html',username = username, posts = information, profuser = session['username'])
+                # Renders page without photos
                 else:
                     flash("Follow people to see pictures on your Newsfeed!")
                     return render_template('newsfeed.html', username = username, posts = None, profuser = session['username'])
+        # Adds comment to post 
         else:
             username = session['username']
             comment = request.form['comment']
             time_stamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
             post_id = request.form['post_id']
             conn = dbconn2.connect(DSN)
+			# Add comment to database
             newsfeedOps.addComment(conn, username, post_id, comment, time_stamp)
             return redirect(url_for('newsfeed', profuser = session['username']))
     else:
@@ -302,7 +320,6 @@ def followUserAjax():
     conn = dbconn2.connect(DSN)
     username = session['username']
     profuser = request.form.get('username')
-
 	# Add follow to database and get new followers count
     profops.follow(conn, username, profuser)
     newfollowers = profops.getFollow(conn, profuser)
@@ -314,15 +331,10 @@ def unfollowUserAjax():
     conn = dbconn2.connect(DSN)
     username = session['username']
     profuser = request.form.get('username')
-
+	# Delete following from the database and return new follower count
     profops.unfollow(conn, username, profuser)
     newfollowers = profops.getFollow(conn, profuser)
-    print (newfollowers)
-
-
     return jsonify({"followers": newfollowers})
-
-
 
 if __name__ == '__main__':
 

@@ -1,6 +1,7 @@
 # profops.py
 # CS304-Final Project
 # Created by: Megan Shum, Maxine Hood, Mina Hattori
+#!/usr/local/bin/python2.7
 # This file handles all the SQL requests needed for the profile page. 
 
 import sys
