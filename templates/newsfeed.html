@@ -24,7 +24,7 @@
         </form>
         {% else %}
         <form  post_id = {{post['post_id']}} action="" method="POST" id="likeform">
-          <input class="uk-button uk-button-default" id="likeButton" value = "unlike" name="likeButton" type = "button"></input>
+          <input class="uk-button uk-button-default" value = "unlike" name="likeButton" type = "button"></input>
         </form>
         {% endif %}
         <h3 class = 'likes' likes = {{post['likes']}}>{{post['likes']}} likes</h3>
