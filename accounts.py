@@ -3,7 +3,6 @@
 # Created by: Megan Shum, Maxine Hood, Mina Hattori
 # This file has the SQL Queries necessary for login and registration
 
-
 import sys
 import MySQLdb
 import dbconn2
