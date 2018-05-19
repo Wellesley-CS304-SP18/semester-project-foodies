@@ -2,6 +2,7 @@
 # Created by Megan Shum & Maxine Hood & Mina Hattori
 # CS304-Final project
 # This file runs the app. 
+#!/usr/local/bin/python2.7
 
 from flask import (Flask, render_template, make_response, url_for, request,
                    redirect, flash, session, send_from_directory, jsonify)
@@ -49,29 +50,26 @@ def loginProcess():
             return redirect(url_for('newsfeed'))
         return render_template('login.html',
     							title='Login')
-    # Post with form info
-	else:
+    else:
         username = request.form['username']
         passwd = request.form['passwd']
         conn = dbconn2.connect(DSN)
-    	
-		# If valid username and password
+    	# If valid username and password
         if (accounts.validUsername(conn, username)):
             storedHash = accounts.getHashedPassword(conn, username)
             if(bcrypt.hashpw(passwd.encode('utf-8'), storedHash.encode('utf-8')) == storedHash.encode('utf-8')):
 				# Save username to the session
 				session['username'] = username
 				return redirect(url_for('newsfeed'))
-            # Bad password 
-			else:
+            else:
                 flash("Login failed. Please try again")
                 return render_template('login.html',
             							title='Login')
-        # Bad username
-		else:
-            flash("Login failed. Please try again")
+        else:
+            flash("Invalid username. Please try again")
             return render_template('login.html',
                                     title='Login')
+
 
 # Function logs out user and returns to the login page									
 @app.route('/logout/')
@@ -86,41 +84,35 @@ def register():
 							title='Register',
 							script=url_for('registerProcess'))
 
-# Process the login form
+# Process register form
 @app.route('/register/', methods=['POST'])
 def registerProcess():
 	# When get, return empty login page
 	if request.method == 'GET':
 		return register()
-	# Process the POST data
 	else:
 		name = request.form['name']
 		email = request.form['email']
 		username = request.form['username']
 		passwd = request.form['passwd']
 		comPasswd = request.form['comPasswd']
-		
-		# Sends back to register page if not all the fields were filled in. 
         if((name == "") or (email == "") or (username == "") or (passwd == "") or (comPasswd == "")):
             flash("Please fill out all fields")
             return register()
-    	
-		conn = dbconn2.connect(DSN)
-    	# Checks for available username 
-		if (accounts.validUsername(conn, username)):
+    	conn = dbconn2.connect(DSN)
+    	if (accounts.validUsername(conn, username)):
     		flash("Username is taken")
     		return register()
-    	# Checks that password matches
-		if (passwd != comPasswd):
+    	if (passwd != comPasswd):
     		flash("Passwords do not match")
     		return register()
-    	
-		# Hash password
+    	# Register new account
     	hashed = bcrypt.hashpw(passwd.encode('utf-8'), bcrypt.gensalt())
-    	# If valid username and password, register new account and send to login page.
+    	# If valid username and password
     	accounts.registerUser(conn, username, hashed, name, email)
     	flash("Registration successful")
     	return redirect(url_for('loginProcess'))
+
 
 #-------------------------------------------------------------------------
 # All pages and funcitons for photos
@@ -129,7 +121,6 @@ def registerProcess():
 # Takes the upload data and saves image to database.
 @app.route('/upload/', methods = ['GET', 'POST'])
 def upload():
-	# Check for logged in user
     if 'username' not in session:
          flash("Please login")
          return redirect(url_for('loginProcess'))
@@ -137,26 +128,24 @@ def upload():
         if request.method == 'GET':
             return render_template('upload.html',
                                     profuser = session['username'])
-        # Process POST data
-		else:
+        else:
             try:
                 username = session['username']
-                description = request.form['description'] 
+                description = request.form['description'] # may throw error
                 location = request.form['location']
                 time_stamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
                 f = request.files['pic']
-
                 mime_type = imghdr.what(f.stream)
                 if mime_type != 'jpeg':
                     raise Exception('Please upload a jpeg image')
-                
-                file = f.filename.split('.')[0]+time_stamp+".jpeg" # generating a unique filename with the use of timestamp
+                # generating a unique filename with the use of timestamp
+                file = f.filename.split('.')[0]+time_stamp+".jpeg"
                 pic = secure_filename(str(file))
                 pathname = 'images/'+ pic
                 f.save(pathname) # saves the contents in a temporarily in the images folder
                 flash('Upload successful')
                 conn = dbconn2.connect(DSN)
-                uploadops.uploadPost(conn, username, description, location, time_stamp, pic)
+                uploadops.uploadPost(conn, username, description, location,         time_stamp, pic)
                 return render_template('upload.html',
                                        src=url_for('pic',fname=pic),
                                        profuser = session['username']
@@ -165,6 +154,7 @@ def upload():
                 flash('Upload failed {why}'.format(why=err))
                 return render_template('upload.html',
                                         profuser = session['username'])
+
 
 # Renders images by file name
 @app.route('/images/<fname>')
@@ -181,22 +171,18 @@ def pic(fname):
 # Displays the profile for a given username										
 @app.route('/profile/<username>', methods = ['GET','POST'])
 def profile(username):
-    # Check for logged in user
-	if 'username' not in session:
+    if 'username' not in session:
          flash("Please log in")
          return redirect(url_for('loginProcess'))
     else:
         conn = dbconn2.connect(DSN)
         pics = profops.retrievePics(conn, username)
         numPosts = profops.numPosts(conn, username)
-        
-		# Get data for displayal on profile page
-		if request.method == 'GET':
+        if request.method == 'GET':
 			followers = profops.getFollow(conn, username)
 			following = profops.getFollowing(conn, username)
 			isFollowing = profops.isFollowing(conn, session['username'], username)
 			notUser = True
-			# Check for user's own profile
 			if (session['username'] == username):
 				notUser = False
 			return render_template('profile.html',
@@ -224,56 +210,50 @@ def profile(username):
                                     profuser = session['username']
                                     )
 
+
 # Searches for a username and displays that profile
 @app.route('/search/', methods = ["POST"])
 def search():
     if 'username' in session:
         if request.method == "POST":
             search = request.form['search']
-            # Return to newsfeed
-			if search == "":
+            if search == "":
                 return redirect(url_for('newsfeed'))
             else:
                 conn = dbconn2.connect(DSN)
-                # Redirect to user's profile
-				if searchops.searchExists(conn, search):
+                if searchops.searchExists(conn, search):
                     return redirect(url_for('profile', username = search))
-                # Return to newsfeed
-				else:
+                else:
                     return redirect(url_for('newsfeed',profuser = session['username'] ))
     else:
         flash("Please log in")
         return redirect(url_for('loginProcess'))
 
+
 # Displays the Newsfeed page
 @app.route('/newsfeed/', methods=['GET', 'POST'])
 def newsfeed():
     if 'username' in session:
-        # Display newsfeed
-		if request.method == 'GET':
+        if request.method == 'GET':
                 username = session['username']
                 conn = dbconn2.connect(DSN)
-				# Get photos from people you follow
                 information = newsfeedOps.retrievePics(conn, username)
-                # Renders page with photos
-				if (information != None):
+                if (information != None):
                     return render_template ('newsfeed.html',username = username, posts = information, profuser = session['username'])
-                # Renders page without photos
-				else:
+                else:
                     flash("Follow people to see pictures on your Newsfeed!")
                     return render_template('newsfeed.html', username = username, posts = None, profuser = session['username'])
-        # Adds comment to post 
-		else:
+        else:
             username = session['username']
             comment = request.form['comment']
             time_stamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
             post_id = request.form['post_id']
             conn = dbconn2.connect(DSN)
-            # Add comment to database
-			newsfeedOps.addComment(conn, username, post_id, comment, time_stamp)
+            newsfeedOps.addComment(conn, username, post_id, comment, time_stamp)
             return redirect(url_for('newsfeed', profuser = session['username']))
     else:
         return redirect(url_for('loginProcess'))
+
 
 # Display the explore page
 @app.route('/explore/', methods = ['GET'])
@@ -335,10 +315,14 @@ def unfollowUserAjax():
     username = session['username']
     profuser = request.form.get('username')
 
-	# Delete following from database and return new follower count
     profops.unfollow(conn, username, profuser)
     newfollowers = profops.getFollow(conn, profuser)
-	return jsonify({"followers": newfollowers})
+    print (newfollowers)
+
+
+    return jsonify({"followers": newfollowers})
+
+
 
 if __name__ == '__main__':
 
