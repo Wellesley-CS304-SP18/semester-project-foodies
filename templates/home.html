@@ -1,22 +1,7 @@
 <!-- This file displays the home page.
-Created by Maxine Hood -->
-<!doctype html>
-<html>
-<head>
-<title> Foodies </title>
-<head>
-      <!-- UIkit CSS -->
-      <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/css/uikit.min.css"/>
-
-      <!-- UIkit JS -->
-     <script src=
-    "https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/js/uikit.min.js">
-     </script>
-     <script src=
-     "https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.40/js/uikit-icons.min.js">
-     </script>
-    </head>
+Created by MMM -->
+{% extends "main.html" %}
+{% block header_content %}
 	<style>
 	h1, h4 {
     text-align: center;
@@ -26,9 +11,8 @@ Created by Maxine Hood -->
 	align: center;
 	}
 	</style>
-</head>
-<body>
-
+{% endblock %}
+{% block outer_content %}
 	<div class="uk-cover-container" uk-height-viewport>
 		<img src="images/yay.jpg" alt="" uk-cover>
 		<div class="uk-overlay uk-overlay-default uk-position-center ">
@@ -42,7 +26,4 @@ Created by Maxine Hood -->
 			</div>
 		</div>
 	</div>
-
-
-</body>
-</html>
+{% endblock%}
