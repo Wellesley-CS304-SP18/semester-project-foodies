@@ -1,14 +1,11 @@
-# Created by Megan Shum
+# searchops.py
 # CS304-Final Project
-# 2018.05.27
-#!/usr/local/bin/python2.7
+# Created by: Megan Shum, Maxine Hood, Mina Hattori
+# This file handles all the SQL calls for the search page.
 
 import sys
 import MySQLdb
 import dbconn2
-
-# ================================================================
-# The functions that do most of the work.
 
 def searchExists(conn, username):
     '''Returns all of the user's pic post from the database in the form of a dictionary'''
@@ -16,6 +13,7 @@ def searchExists(conn, username):
     curs.execute('select username from user where username = %s', [username])
     exists = curs.fetchone()
     return bool(exists)
+	
 # ================================================================
 # This starts the ball rolling, *if* the script is run as a script,
 # rather than just being imported.

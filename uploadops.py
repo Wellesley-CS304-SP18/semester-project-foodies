@@ -1,14 +1,11 @@
-# Created by Megan Shum
+# uploadops.py
 # CS304-Final Project
-# 2018.05.27
-#!/usr/local/bin/python2.7
+# Created by: Megan Shum, Maxine Hood, Mina Hattori
+# This file handles all the SQL calls for the upload page.
 
 import sys
 import MySQLdb
 import dbconn2
-
-# ================================================================
-# The functions that do most of the work.
 
 def uploadPost(conn, username, description, location, time_stamp, pathname):
     '''Inserts post in Posts table'''

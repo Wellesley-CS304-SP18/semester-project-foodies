@@ -1,14 +1,11 @@
-# Created by Megan Shum
+# profops.py
 # CS304-Final Project
-# 2018.05.27
-#!/usr/local/bin/python2.7
+# Created by: Megan Shum, Maxine Hood, Mina Hattori
+# This file handles all the SQL requests needed for the profile page. 
 
 import sys
 import MySQLdb
 import dbconn2
-
-# ================================================================
-# The functions that do most of the work.
 
 def retrievePics(conn, username):
     '''Returns all of the user's pic post from the database in the form of a dictionary'''

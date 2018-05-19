@@ -1,14 +1,11 @@
-# Created by Mina Hattori
+# newsfeedOps.py
 # CS304-Final Project
-# 2018.05.27
-#!/usr/local/bin/python2.7
+# Created by: Megan Shum, Maxine Hood, Mina Hattori
+# This file handles all the SQL calls for the newsfeed page. 
 
 import sys
 import MySQLdb
 import dbconn2
-
-# ================================================================
-# The functions that do most of the work.
 
 def retrievePics(conn, username):
     '''Returns all of the pics from the people the user follows from the database in the form of a dictionary'''
@@ -49,7 +46,6 @@ def updateUnlikes (conn, postid, username):
     else:
         likes = count['COUNT(post_id)']
     curs.execute('update posts set likes = %s where post_id = %s',[likes, postid])
-
 
 def getnewLikes(conn, postid):
     '''gets the new number of like'''
