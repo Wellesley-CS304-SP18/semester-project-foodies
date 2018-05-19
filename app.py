@@ -169,21 +169,22 @@ def profile(username):
                                     profuser = session['username']
 									)
         else:
-			action = request.form['follow']
-			if action == "follow":
-				profops.follow(conn, session['username'], username)
-				follow = True
-			else:
-				profops.unfollow(conn, session['username'], username)
-				follow = False
-			followers = profops.getFollow(conn, username)
-			following = profops.getFollowing(conn, username)
-			return render_template('profile.html',
+			# action = request.form['follow']
+			# if action == "follow":
+			# 	profops.follow(conn, session['username'], username)
+			# 	follow = True
+			# else:
+			# 	profops.unfollow(conn, session['username'], username)
+			# 	follow = False
+            isfollowing = profops.isFollowing(conn, session['username'], username)
+            followers = profops.getFollow(conn, username)
+            following = profops.getFollowing(conn, username)
+            return render_template('profile.html',
                                     username = username,
                                     followers = followers,
                                     following = following,
                                     pics = pics,
-									follow = follow,
+									follow = isfollowing,
 									notUser = True,
                                     numPosts = numPosts,
                                     profuser = session['username']
@@ -261,6 +262,33 @@ def unlikePostAjax():
     #get the new number movie information
     newLikes = newsfeedOps.getnewLikes(conn,post_id)
     return jsonify({"likes": newLikes})
+
+@app.route('/followUserAjax/', methods = ['POST'])
+def followUserAjax():
+    conn = dbconn2.connect(DSN)
+    username = session['username']
+    profuser = request.form.get('username')
+
+    profops.follow(conn, username, profuser)
+    newfollowers = profops.getFollow(conn, profuser)
+    print (newfollowers)
+
+
+    return jsonify({"followers": newfollowers})
+
+@app.route('/unfollowUserAjax/', methods = ['POST'])
+def unfollowUserAjax():
+    conn = dbconn2.connect(DSN)
+    username = session['username']
+    profuser = request.form.get('username')
+
+    profops.unfollow(conn, username, profuser)
+    newfollowers = profops.getFollow(conn, profuser)
+    print (newfollowers)
+
+
+    return jsonify({"followers": newfollowers})
+
 
 
 # renders images

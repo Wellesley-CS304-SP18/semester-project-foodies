@@ -7,19 +7,19 @@ CS304-Final Project
 {% block inner_content %}
   <article class="uk-comment">
     <header class="uk-comment-header uk-grid-medium uk-flex-middle" uk-grid>
-    <div class="uk-width-expand uk-margin-left uk-margin-top">
+    <div id = "proftop" class="uk-width-expand uk-margin-left uk-margin-top">
       <h1>{{ username }}</h1>
       <ul class="uk-subnav uk-subnav-divider uk-text-uppercase">
         <li>{{ numPosts }} posts </li>
-        <li>{{ followers }} followers</li>
+        <li class = 'followers' followers = {{followers}}>{{ followers }} followers</li>
         <li>{{ following }} following</li>
 		{% if not follow and notUser %}
-		<form method="POST" action="">
-			<li><input class="uk-button uk-button-default" name="follow" type="submit" method="POST" value="follow"></li>
+		<form method="POST" action="" profuser = {{username}}>
+			<li><input class="uk-button uk-button-default" name="followButton" value = "follow" type="button" method="POST" value="follow"></li>
 		</form>
 		{% elif follow and notUser %}
-		<form method="POST" action="">
-			<li><input class="uk-button uk-button-default" name="follow" type="submit" method="POST" value="unfollow"></li>
+		<form method="POST" action="" profuser = {{username}}>
+			<li><input class="uk-button uk-button-default" name="followButton" value = "unfollow" type="button" method="POST" value="unfollow"></li>
 		</form>
 		{% endif %}
       </ul>
@@ -36,4 +36,42 @@ CS304-Final Project
     {% endfor %}
   </div>
   <a href="" uk-totop></a>
+
+
+<script src="//code.jquery.com/jquery-3.2.1.min.js"></script>
+<script>
+  $("#proftop").on("click", '[name=followButton]',function (event) {
+
+        //retrieving the different values necessary to update likes
+        var $followbutton = $(event.target);
+        var followers = $followbutton.closest(".uk-subnav").find(".followers");
+        var value = $followbutton.val();
+        var username = $followbutton.closest("[profuser]").attr('profuser');
+        console.log(username);
+        console.log(followers);
+        console.log(value);
+
+
+        //posts the average rating value returend by setRatingAjax route in app.py
+        if (value == "follow")
+          $.post('/followUserAjax/', {"username":username},
+            function showfollowers(dict) {
+              followers.text(dict.followers + " followers");
+              $followbutton.val("unfollow");
+            },
+            "json");
+      else {
+     $.post('/unfollowUserAjax/', {"username":username},
+            function showfollowers(dict) {
+              followers.text(dict.followers + " followers");
+              $followbutton.val("follow");
+            },
+            "json");
+   }
+ });
+
+</script>
+
+
+
 {% endblock %}
