@@ -10,7 +10,7 @@ CS304-Final project
         <div class="uk-navbar-left">
             <ul class="uk-navbar-nav">
                 <li><a href="{{ url_for('newsfeed') }}">Newsfeed</a></li>
-                <li><a href="{{ url_for('toUserProfile') }}">Profile</a></li>
+                <li><a href="{{ url_for('profile', username = profuser)}}">Profile</a></li>
                 <li><a href="{{ url_for('upload') }}">Post/Upload</a></li>
                 <li><a href="{{ url_for('explore') }}">Explore</a></li>
                 <li><a href="{{ url_for('logout') }}" type="submit" value="logout">Logout</a></li>

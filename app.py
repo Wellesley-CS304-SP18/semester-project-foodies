@@ -113,7 +113,8 @@ def upload():
          return redirect(url_for('loginProcess'))
     else:
         if request.method == 'GET':
-            return render_template('upload.html')
+            return render_template('upload.html',
+                                    profuser = session['username'])
         else:
             try:
                 username = session['username']
@@ -133,11 +134,13 @@ def upload():
                 conn = dbconn2.connect(DSN)
                 uploadops.uploadPost(conn, username, description, location,         time_stamp, pic)
                 return render_template('upload.html',
-                                       src=url_for('pic',fname=pic)
+                                       src=url_for('pic',fname=pic),
+                                       profuser = session['username']
                                        )
             except Exception as err:
                 flash('Upload failed {why}'.format(why=err))
-                return render_template('upload.html')
+                return render_template('upload.html',
+                                        profuser = session['username'])
 
 @app.route('/profile/<username>', methods = ['GET','POST'])
 def profile(username):
@@ -162,7 +165,8 @@ def profile(username):
 									pics = pics,
 									follow = isFollowing,
 									notUser = notUser,
-                                    numPosts = numPosts
+                                    numPosts = numPosts,
+                                    profuser = session['username']
 									)
         else:
 			action = request.form['follow']
@@ -181,16 +185,9 @@ def profile(username):
                                     pics = pics,
 									follow = follow,
 									notUser = True,
-                                    numPosts = numPosts
+                                    numPosts = numPosts,
+                                    profuser = session['username']
                                     )
-
-@app.route('/toUserProfile/')
-def toUserProfile():
-    if 'username' in session:
-        return redirect(url_for('profile', username = session['username']))
-    else:
-        flash("Please login")
-        return redirect(url_for('loginProcess'))
 
 @app.route('/search/', methods = ["POST"])
 def search():
@@ -204,7 +201,7 @@ def search():
                 if searchops.searchExists(conn, search):
                     return redirect(url_for('profile', username = search))
                 else:
-                    return redirect(url_for('newsfeed'))
+                    return redirect(url_for('newsfeed',profuser = session['username'] ))
     else:
         flash("Please log in")
         return redirect(url_for('loginProcess'))
@@ -218,10 +215,10 @@ def newsfeed():
                 conn = dbconn2.connect(DSN)
                 information = newsfeedOps.retrievePics(conn, username)
                 if (information != None):
-                    return render_template ('newsfeed.html',username = username, posts = information)
+                    return render_template ('newsfeed.html',username = username, posts = information, profuser = session['username'])
                 else:
                     flash("Follow people to see pictures on your Newsfeed!")
-                    return render_template('newsfeed.html', username = username, posts = None)
+                    return render_template('newsfeed.html', username = username, posts = None, profuser = session['username'])
         else:
             username = session['username']
             comment = request.form['comment']
@@ -229,7 +226,7 @@ def newsfeed():
             post_id = request.form['post_id']
             conn = dbconn2.connect(DSN)
             newsfeedOps.addComment(conn, username, post_id, comment, time_stamp)
-            return redirect(url_for('newsfeed'))
+            return redirect(url_for('newsfeed', profuser = session['username']))
     else:
         return redirect(url_for('loginProcess'))
 
@@ -238,7 +235,7 @@ def explore():
     if 'username' in session:
         conn = dbconn2.connect(DSN)
         pics = newsfeedOps.getExplorePosts(conn)
-        return render_template('explore.html', pics=pics)
+        return render_template('explore.html', pics=pics, profuser = session['username'])
     else:
         flash("Please log in")
         return redirect(url_for('loginProcess'))
